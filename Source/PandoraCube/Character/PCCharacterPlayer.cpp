@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Misc/OutputDeviceNull.h"
 
 APCCharacterPlayer::APCCharacterPlayer()
 {
@@ -51,9 +52,17 @@ APCCharacterPlayer::APCCharacterPlayer()
 		SprintAction = InputActionSprintRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFireRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_Fire.IA_Fire'"));
+	if (nullptr != InputActionFireRef.Object)
+	{
+		FireAction = InputActionFireRef.Object;
+	}
+
 	SideMov = 0.0f;
 	MouseX = 0.0f;
 	MouseY = 0.0f;
+
+	AnimInstanceRef = nullptr;
 }
 
 void APCCharacterPlayer::BeginPlay()
@@ -71,6 +80,9 @@ void APCCharacterPlayer::BeginPlay()
 	GetWorldTimerManager().SetTimer(TimerHandle, [this]() {
 			SetHandSwayFloats(SideMov, MouseX, MouseY);
 	}, 0.015f, true);
+
+	AnimInstanceRef = GetMesh()->GetAnimInstance();
+	check(AnimInstanceRef != nullptr && "Failed to get Animation instance. AnimInstanceRef is null!");
 }
 
 void APCCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -85,6 +97,7 @@ void APCCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APCCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APCCharacterPlayer::Sprint);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APCCharacterPlayer::StopSprinting);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APCCharacterPlayer::Fire);
 }
 
 FHandSwayValues APCCharacterPlayer::GetHandSwayFloats_Implementation() const
@@ -140,4 +153,11 @@ void APCCharacterPlayer::Sprint()
 void APCCharacterPlayer::StopSprinting()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
+}
+
+void APCCharacterPlayer::Fire()
+{
+	FOutputDeviceNull Ar;
+	FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), 1.5);
+	AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
 }
