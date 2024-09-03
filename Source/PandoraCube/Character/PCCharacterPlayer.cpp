@@ -159,5 +159,15 @@ void APCCharacterPlayer::Fire()
 {
 	FOutputDeviceNull Ar;
 	FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), 1.5);
-	AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
+
+	bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
+
+	if (bSuccess)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Successfully called %s in AnimInstance"), *FunctionNameWithArgs);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to call %s in AnimInstance"), *FunctionNameWithArgs);
+	}
 }
