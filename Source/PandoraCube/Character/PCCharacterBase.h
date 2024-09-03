@@ -20,6 +20,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	int64 Health = 100;
+
 public:
 	virtual FTransform GetLeftHandSocketTransform_Implementation() const override;
 
@@ -27,5 +29,5 @@ public:
 	TSubclassOf<class APCWeaponBase> WeaponClass;
 
 	UPROPERTY()
-	APCWeaponBase* EquippedWeapon;
+	TObjectPtr<APCWeaponBase> EquippedWeapon;
 };

@@ -96,6 +96,12 @@ APCCharacterPlayer::APCCharacterPlayer()
 		WeaponOtherParticle = OtherParticleRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> MuzzleFlashRef(TEXT("/Script/Engine.ParticleSystem'/Game/MilitaryWeapSilver/FX/P_AssaultRifle_MuzzleFlash.P_AssaultRifle_MuzzleFlash'"));
+	if (nullptr != MuzzleFlashRef.Object)
+	{
+		WeaponMuzzleFlash = MuzzleFlashRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<USoundBase> RifleSoundRef(TEXT("/Script/Engine.SoundCue'/Game/MilitaryWeapSilver/Sound/Rifle/Cues/RifleA_Fire_Cue.RifleA_Fire_Cue'"));
 	if (nullptr != RifleSoundRef.Object)
 	{
@@ -247,6 +253,14 @@ void APCCharacterPlayer::Fire()
 				{
 					UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
 					ControllerRecoil();
+
+					if (EquippedWeapon)
+					{
+						USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
+						FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
+
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+					}
 				}
 			}
 		},
@@ -318,6 +332,27 @@ void APCCharacterPlayer::ShootRay()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
 					UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 					bParticleSpawned = true;
+
+					FCollisionQueryParams NotEnemyTraceParams;
+					NotEnemyTraceParams.AddIgnoredActor(this);
+					NotEnemyTraceParams.AddIgnoredActor(HitActor);
+
+					FHitResult HitEnemyResult;
+					FVector EndPoint = FollowCamera->GetForwardVector() * 1500 + HitLocation;
+
+					bool bEnemyHit = GetWorld()->LineTraceSingleByChannel(
+						HitEnemyResult,
+						HitLocation,
+						EndPoint,
+						ECC_Visibility,
+						NotEnemyTraceParams
+					);
+
+					if (bEnemyHit)
+					{
+
+					}
+
 					break;
 				}
 			}
@@ -373,7 +408,7 @@ void APCCharacterPlayer::HandleTimelineProgress(float Value)
 	UE_LOG(LogTemp, Warning, TEXT("Timeline Value: %f"), Value);
 	float InterpolatedValue = FMath::Lerp(0.0f, RecoilAmount, Value);
 
-	float SelectedPitch = bIsAiming ? 0.25 : 1.0;
+	float SelectedPitch = bIsAiming ? -0.25 : -1.0;
 	float ControllerPitchValue = InterpolatedValue * SelectedPitch;
 
 	AddControllerPitchInput(ControllerPitchValue);
