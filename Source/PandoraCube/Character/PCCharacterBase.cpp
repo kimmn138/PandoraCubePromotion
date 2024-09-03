@@ -60,7 +60,7 @@ void APCCharacterBase::BeginPlay()
 
 			EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
 
-			EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 1.0f, 0.0f));
+			EquippedWeapon->SetActorRelativeLocation(FVector(-11.0f, 1.0f, 0.0f));
 			EquippedWeapon->SetActorRelativeRotation(FRotator(10.79997f, 97.199968f, 3.59999f));
 		}
 	}
