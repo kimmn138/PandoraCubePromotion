@@ -19,6 +19,8 @@ public:
 	// Sets default values for this character's properties
 	APCPlayerCharacter();
 
+	//virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -123,6 +125,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Timeline, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCurveFloat> ControllerRecoilCurve;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Timeline, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UTimelineComponent> AimTimeline;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Timeline, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UCurveFloat> AimCurve;
+
+	FOnTimelineFloat AimInterpFunction{};
+
+	UFUNCTION()
+	void SetCameraLocation(float Value);
+
+	virtual bool  GetIsAim_Implementation() const override;
+
 	void ShootRay();
 
 	void ControllerRecoil();
@@ -137,12 +152,17 @@ protected:
 
 	int32 bIsAttacking : 1;
 	int32 bIsAiming : 1;
+	int32 bCanAim : 1;
 
 	float RecoilAmount = 0.15f;
 
-	FOnTimelineFloat InterpFunction{};
+	FOnTimelineFloat ControllerRecoilInterpFunction{};
 
 	UFUNCTION()
 	void HandleTimelineProgress(float Value);
 
+// UI Widget Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UUserWidget> PlayerMainWidget;
 };

@@ -42,4 +42,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
 	FHandSwayValues GetHandSwayFloats() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
+	bool GetIsAim() const;
 };

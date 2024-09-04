@@ -16,6 +16,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
 #include "Prop/PCBlood.h"
+#include "Blueprint/UserWidget.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -49,7 +50,10 @@ APCPlayerCharacter::APCPlayerCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	ControllerTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("ControllerTimeline"));
-	InterpFunction.BindUFunction(this, FName("HandleTimelineProgress"));
+	ControllerRecoilInterpFunction.BindUFunction(this, FName("HandleTimelineProgress"));
+	
+	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AimTimeline"));
+	AimInterpFunction.BindUFunction(this, FName("SetCameraLocation"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
 	if (CharacterMeshRef.Object)
@@ -73,6 +77,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 	if (nullptr != ControllerRecoilCurveRef.Object)
 	{
 		ControllerRecoilCurve = ControllerRecoilCurveRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> AimCurveRef(TEXT("/Script/Engine.CurveFloat'/Game/PandoraCube/Curve/AimCurveFloat.AimCurveFloat'"));
+	if (nullptr != AimCurveRef.Object)
+	{
+		AimCurve = AimCurveRef.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/PandoraCube/Input/IMC_Default.IMC_Default'"));
@@ -171,12 +181,31 @@ APCPlayerCharacter::APCPlayerCharacter()
 		BloodDecal = BloodDecalRef.Class;
 	}
 
+	static ConstructorHelpers::FClassFinder<UUserWidget> PlayerMainWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PlayerMainWidget.PlayerMainWidget_C"));
+	if (PlayerMainWidgetRef.Class)
+	{
+		UUserWidget* PlayerWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), PlayerMainWidgetRef.Class);
+		if (PlayerWidgetInstance)
+		{
+			PlayerWidgetInstance->AddToViewport();
+		}
+	}
+
 	SideMov = 0.0f;
 	MouseX = 0.0f;
 	MouseY = 0.0f;
 
 	AnimInstanceRef = nullptr;
+
+	bCanAim = 1;
 }
+
+//void APCPlayerCharacter::Tick(float DeltaTime)
+//{
+//	Super::Tick(DeltaTime);
+//
+//	Aiming();
+//}
 
 void APCPlayerCharacter::BeginPlay()
 {
@@ -192,8 +221,8 @@ void APCPlayerCharacter::BeginPlay()
 
 			EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
 
-			EquippedWeapon->SetActorRelativeLocation(FVector(-11.0f, 1.0f, 0.0f));
-			EquippedWeapon->SetActorRelativeRotation(FRotator(10.79997f, 97.199968f, 3.59999f));
+			EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
+			EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
 		}
 	}
 
@@ -214,9 +243,16 @@ void APCPlayerCharacter::BeginPlay()
 
 	if (ControllerRecoilCurve)
 	{
-		ControllerTimeline->AddInterpFloat(ControllerRecoilCurve, InterpFunction);
+		ControllerTimeline->AddInterpFloat(ControllerRecoilCurve, ControllerRecoilInterpFunction);
 		ControllerTimeline->SetTimelineLength(0.15f);
 		ControllerTimeline->SetLooping(false);
+	}
+
+	if (AimCurve)
+	{
+		AimTimeline->AddInterpFloat(AimCurve, AimInterpFunction);
+		AimTimeline->SetTimelineLength(0.25f);
+		AimTimeline->SetLooping(false);
 	}
 }
 
@@ -284,6 +320,22 @@ FTransform APCPlayerCharacter::GetLeftHandSocketTransform_Implementation() const
 	return FTransform::Identity;
 }
 
+void APCPlayerCharacter::SetCameraLocation(float Value)
+{
+	FVector LerpVector(1.0f, 4.5f, 13.0f);
+	USceneComponent* AimOffsetComponent = Cast<USceneComponent>(EquippedWeapon->GetDefaultSubobjectByName(TEXT("AimOffset")));
+	FVector AimOffsetLocation = AimOffsetComponent->GetRelativeLocation();
+
+	FVector InterpolatedValue = FMath::Lerp(FVector(0.0f, 0.0f, 0.0f), LerpVector + AimOffsetLocation, Value);
+
+	CameraBoom->SetRelativeLocation(InterpolatedValue);
+}
+
+bool APCPlayerCharacter::GetIsAim_Implementation() const
+{
+	return bIsAiming;
+}
+
 void APCPlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -314,11 +366,14 @@ void APCPlayerCharacter::Look(const FInputActionValue& Value)
 void APCPlayerCharacter::Sprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	StopAiming();
+	bCanAim = 0;
 }
 
 void APCPlayerCharacter::StopSprinting()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
+	bCanAim = 1;
 }
 
 void APCPlayerCharacter::Fire()
@@ -364,12 +419,23 @@ void APCPlayerCharacter::StopFiring()
 
 void APCPlayerCharacter::Aiming()
 {
-	bIsAiming = 1;
+	if (bCanAim)
+	{
+		bIsAiming = 1;
+		if (AimCurve)
+		{
+			AimTimeline->Play();
+		}
+	}
 }
 
 void APCPlayerCharacter::StopAiming()
 {
 	bIsAiming = 0;
+	if (AimCurve)
+	{
+		AimTimeline->Reverse();
+	}
 }
 
 void APCPlayerCharacter::ShootRay()

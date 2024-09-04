@@ -17,4 +17,7 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Mesh)
 	TObjectPtr<class USkeletalMeshComponent> SkeletalMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Aim)
+	TObjectPtr<class USceneComponent> AimOffset;
 };
