@@ -8,6 +8,8 @@
 #include "Interface/PCPlayerInterface.h"
 #include "InputActionValue.h"
 #include "Components/TimelineComponent.h"
+#include "Component/PCInventoryComponent.h"
+#include "Engine/DataTable.h"
 #include "PCPlayerCharacter.generated.h"
 
 UCLASS()
@@ -165,4 +167,15 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> PlayerMainWidget;
+
+// Inventory Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPCInventoryComponent> InventoryComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> ItemDataTable;
+
+	void EquipItem();
+	int32 CurrentItemSelection = 1;
 };

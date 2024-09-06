@@ -17,6 +17,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Prop/PCBlood.h"
 #include "Blueprint/UserWidget.h"
+#include "Item/ItemTypes.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -54,6 +55,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	
 	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AimTimeline"));
 	AimInterpFunction.BindUFunction(this, FName("SetCameraLocation"));
+
+	InventoryComponent = CreateDefaultSubobject<UPCInventoryComponent>(TEXT("Inventory"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
 	if (CharacterMeshRef.Object)
@@ -191,6 +194,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 		}
 	}
 
+	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableRef(TEXT("/Script/Engine.DataTable'/Game/PandoraCube/ItemData/ItemDataTable.ItemDataTable'"));
+	if (nullptr != ItemDataTableRef.Object)
+	{
+		ItemDataTable = ItemDataTableRef.Object;
+	}
+
 	SideMov = 0.0f;
 	MouseX = 0.0f;
 	MouseY = 0.0f;
@@ -211,20 +220,7 @@ void APCPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (WeaponClass)
-	{
-		EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
-
-		if (EquippedWeapon)
-		{
-			FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-
-			EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
-
-			EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
-			EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
-		}
-	}
+	EquipItem();
 
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -587,5 +583,44 @@ void APCPlayerCharacter::HandleTimelineProgress(float Value)
 	else
 	{
 		AddControllerYawInput(ControllerYawValue);
+	}
+}
+
+void APCPlayerCharacter::EquipItem()
+{
+	if (InventoryComponent && InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
+	{
+		int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection];
+
+		FName RowName = FName(*FString::FromInt(SelectedItem));
+		FString ContextString = TEXT("Item Data Context");
+
+		FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
+
+		if (Row)
+		{
+			WeaponClass = Row->WeaponClass.LoadSynchronous();
+		}
+	}
+
+	if (WeaponClass)
+	{
+		if (EquippedWeapon != nullptr)
+		{
+			EquippedWeapon->Destroy();
+			EquippedWeapon = nullptr;
+		}
+
+		EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
+
+		if (EquippedWeapon)
+		{
+			FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+
+			EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
+
+			EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
+			EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
+		}
 	}
 }
