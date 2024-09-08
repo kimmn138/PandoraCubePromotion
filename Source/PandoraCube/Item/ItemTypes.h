@@ -13,6 +13,30 @@ enum class EItemType : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FWeaponStats : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    float Damage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    float FireRate;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    int32 MagSize;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    int32 Range;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    float ProceduralRecoil;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    float InputRecoil;
+};
+
+USTRUCT(BlueprintType)
 struct FInventoryItem : public FTableRowBase
 {
     GENERATED_BODY()
@@ -27,5 +51,8 @@ struct FInventoryItem : public FTableRowBase
     EItemType Type;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    TSoftClassPtr<APCWeaponBase> WeaponClass;
+    TSubclassOf<APCWeaponBase> WeaponClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    FWeaponStats Stats;
 };

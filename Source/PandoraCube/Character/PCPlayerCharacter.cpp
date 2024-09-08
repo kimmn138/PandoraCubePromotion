@@ -130,6 +130,18 @@ APCPlayerCharacter::APCPlayerCharacter()
 		AimingAction = InputActionAimingRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeInven1Ref(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_Inventory1.IA_Inventory1'"));
+	if (nullptr != InputActionChangeInven1Ref.Object)
+	{
+		ChangeInven1Action = InputActionChangeInven1Ref.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeInven2Ref(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_Inventory2.IA_Inventory2'"));
+	if (nullptr != InputActionChangeInven2Ref.Object)
+	{
+		ChangeInven2Action = InputActionChangeInven2Ref.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> MetalParticleRef(TEXT("/Script/Engine.ParticleSystem'/Game/MilitaryWeapSilver/FX/P_Impact_Metal_Small_01.P_Impact_Metal_Small_01'"));
 	if (nullptr != MetalParticleRef.Object)
 	{
@@ -268,6 +280,8 @@ void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::StopFiring);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &APCPlayerCharacter::Aiming);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::StopAiming);
+	EnhancedInputComponent->BindAction(ChangeInven1Action, ETriggerEvent::Triggered, this, &APCPlayerCharacter::ChangeInven1);
+	EnhancedInputComponent->BindAction(ChangeInven2Action, ETriggerEvent::Triggered, this, &APCPlayerCharacter::ChangeInven2);
 }
 
 FHandSwayValues APCPlayerCharacter::GetHandSwayFloats_Implementation() const
@@ -385,7 +399,7 @@ void APCPlayerCharacter::Fire()
 			{
 				ShootRay();
 				FOutputDeviceNull Ar;
-				FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), 1.5);
+				FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
 
 				bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
 				if (bSuccess)
@@ -403,7 +417,7 @@ void APCPlayerCharacter::Fire()
 				}
 			}
 		},
-		FireRate,
+		CurrentStats.FireRate,
 		true
 	);
 }
@@ -434,9 +448,21 @@ void APCPlayerCharacter::StopAiming()
 	}
 }
 
+void APCPlayerCharacter::ChangeInven1()
+{
+	CurrentItemSelection = 0;
+	EquipItem();
+}
+
+void APCPlayerCharacter::ChangeInven2()
+{
+	CurrentItemSelection = 1;
+	EquipItem();
+}
+
 void APCPlayerCharacter::ShootRay()
 {
-	FVector Result = FollowCamera->GetForwardVector() * 50000.0f;
+	FVector Result = FollowCamera->GetForwardVector() * CurrentStats.Range;
 
 	FVector Start = FollowCamera->GetComponentLocation();
 	FVector End = Start + Result;
@@ -523,7 +549,7 @@ void APCPlayerCharacter::ShootRay()
 
 			UGameplayStatics::ApplyDamage(
 				HitActor,
-				Damage,
+				CurrentStats.Damage,
 				GetController(),
 				this,
 				nullptr
@@ -532,7 +558,7 @@ void APCPlayerCharacter::ShootRay()
 
 		UGameplayStatics::ApplyDamage(
 			HitActor,
-			Damage,
+			CurrentStats.Damage,
 			GetController(),
 			this,
 			nullptr
@@ -564,7 +590,7 @@ void APCPlayerCharacter::ControllerRecoil()
 void APCPlayerCharacter::HandleTimelineProgress(float Value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Timeline Value: %f"), Value);
-	float InterpolatedValue = FMath::Lerp(0.0f, RecoilAmount, Value);
+	float InterpolatedValue = FMath::Lerp(0.0f, CurrentStats.InputRecoil, Value);
 
 	float SelectedPitch = bIsAiming ? -0.25 : -1.0;
 	float ControllerPitchValue = InterpolatedValue * SelectedPitch;
@@ -588,39 +614,44 @@ void APCPlayerCharacter::HandleTimelineProgress(float Value)
 
 void APCPlayerCharacter::EquipItem()
 {
-	if (InventoryComponent && InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
+	if (IsLocallyControlled())
 	{
-		int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection];
-
-		FName RowName = FName(*FString::FromInt(SelectedItem));
-		FString ContextString = TEXT("Item Data Context");
-
-		FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
-
-		if (Row)
+		if (InventoryComponent && InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
 		{
-			WeaponClass = Row->WeaponClass.LoadSynchronous();
-		}
-	}
+			int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection];
 
-	if (WeaponClass)
-	{
-		if (EquippedWeapon != nullptr)
-		{
-			EquippedWeapon->Destroy();
-			EquippedWeapon = nullptr;
-		}
+			FName RowName = FName(*FString::FromInt(SelectedItem));
+			FString ContextString = TEXT("Item Data Context");
 
-		EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
+			FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
 
-		if (EquippedWeapon)
-		{
-			FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+			if (Row)
+			{
+				WeaponClass = Row->WeaponClass;
+			}
 
-			EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
+			if (WeaponClass)
+			{
+				if (EquippedWeapon != nullptr)
+				{
+					EquippedWeapon->Destroy();
+					EquippedWeapon = nullptr;
+				}
 
-			EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
-			EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
+				EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
+
+				if (EquippedWeapon)
+				{
+					FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+
+					EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
+
+					EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
+					EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
+
+					CurrentStats = Row->Stats;
+				}
+			}
 		}
 	}
 }

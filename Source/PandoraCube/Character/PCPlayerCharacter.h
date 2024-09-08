@@ -10,6 +10,7 @@
 #include "Components/TimelineComponent.h"
 #include "Component/PCInventoryComponent.h"
 #include "Engine/DataTable.h"
+#include "Item/ItemTypes.h"
 #include "PCPlayerCharacter.generated.h"
 
 UCLASS()
@@ -75,10 +76,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Decal")
 	TSubclassOf<class APCBlood> BloodDecal;
 
-	float Damage;
-
-	float FireRate = 0.2f;
-
 // Camera Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
@@ -110,6 +107,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> AimingAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ChangeInven1Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ChangeInven2Action;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Sprint();
@@ -118,6 +121,8 @@ protected:
 	void StopFiring();
 	void Aiming();
 	void StopAiming();
+	void ChangeInven1();
+	void ChangeInven2();
 
 // Weapon Moving Section
 protected:
@@ -156,8 +161,6 @@ protected:
 	int32 bIsAiming : 1;
 	int32 bCanAim : 1;
 
-	float RecoilAmount = 0.15f;
-
 	FOnTimelineFloat ControllerRecoilInterpFunction{};
 
 	UFUNCTION()
@@ -178,4 +181,7 @@ protected:
 
 	void EquipItem();
 	int32 CurrentItemSelection = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
+	FWeaponStats CurrentStats;
 };
