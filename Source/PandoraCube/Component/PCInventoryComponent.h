@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Item/ItemTypes.h"
 #include "PCInventoryComponent.generated.h"
 
 
@@ -25,5 +26,5 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TArray<int32> Inventory;
+	TArray<FDynamicInventoryItem> Inventory;
 };

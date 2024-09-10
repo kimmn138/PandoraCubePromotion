@@ -142,6 +142,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 		ChangeInven2Action = InputActionChangeInven2Ref.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionReloadRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_Reload.IA_Reload'"));
+	if (nullptr != InputActionReloadRef.Object)
+	{
+		ReloadAction = InputActionReloadRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> MetalParticleRef(TEXT("/Script/Engine.ParticleSystem'/Game/MilitaryWeapSilver/FX/P_Impact_Metal_Small_01.P_Impact_Metal_Small_01'"));
 	if (nullptr != MetalParticleRef.Object)
 	{
@@ -219,6 +225,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 	AnimInstanceRef = nullptr;
 
 	bCanAim = 1;
+	bCanFire = 1;
 }
 
 //void APCPlayerCharacter::Tick(float DeltaTime)
@@ -276,12 +283,13 @@ void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Look);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Sprint);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::StopSprinting);
-	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APCPlayerCharacter::Fire);
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APCPlayerCharacter::StartFiring);
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::StopFiring);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &APCPlayerCharacter::Aiming);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::StopAiming);
 	EnhancedInputComponent->BindAction(ChangeInven1Action, ETriggerEvent::Triggered, this, &APCPlayerCharacter::ChangeInven1);
 	EnhancedInputComponent->BindAction(ChangeInven2Action, ETriggerEvent::Triggered, this, &APCPlayerCharacter::ChangeInven2);
+	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Reload);
 }
 
 FHandSwayValues APCPlayerCharacter::GetHandSwayFloats_Implementation() const
@@ -328,6 +336,23 @@ FTransform APCPlayerCharacter::GetLeftHandSocketTransform_Implementation() const
 	}
 
 	return FTransform::Identity;
+}
+
+void APCPlayerCharacter::ReduceBullet()
+{
+	InventoryComponent->Inventory[CurrentItemSelection].Bullets -= 1;
+}
+
+bool APCPlayerCharacter::BulletsLeft()
+{
+	if (InventoryComponent->Inventory[CurrentItemSelection].Bullets >= 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void APCPlayerCharacter::SetCameraLocation(float Value)
@@ -386,45 +411,58 @@ void APCPlayerCharacter::StopSprinting()
 	bCanAim = 1;
 }
 
+void APCPlayerCharacter::StartFiring()
+{
+	if (!GetWorld()->GetTimerManager().IsTimerActive(FireDelayHandle))
+	{
+		bIsAttacking = 1;
+		Fire();
+	}
+}
+
 void APCPlayerCharacter::Fire()
 {
-	FTimerHandle FireDelayHandle;
-	bIsAttacking = 1;
-
-	GetWorld()->GetTimerManager().SetTimer(
-		FireDelayHandle,
-		[this]()
+	if (bIsAttacking && bCanFire)
+	{
+		if (BulletsLeft())
 		{
-			if (bIsAttacking)
+			FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+			UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
+			ReduceBullet();
+			ShootRay();
+			FOutputDeviceNull Ar;
+			FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
+
+			bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
+			if (bSuccess)
 			{
-				ShootRay();
-				FOutputDeviceNull Ar;
-				FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
+				UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+				ControllerRecoil();
 
-				bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
-				if (bSuccess)
+				if (EquippedWeapon)
 				{
-					UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
-					ControllerRecoil();
+					USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
+					FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
 
-					if (EquippedWeapon)
-					{
-						USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
-						FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
-
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
-					}
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
 				}
 			}
-		},
-		CurrentStats.FireRate,
-		true
-	);
+
+			GetWorld()->GetTimerManager().SetTimer(
+				FireDelayHandle,
+				this,
+				&APCPlayerCharacter::Fire,
+				CurrentStats.FireRate,
+				false
+			);
+		}
+	}
 }
 
 void APCPlayerCharacter::StopFiring()
 {
 	bIsAttacking = 0;
+	GetWorld()->GetTimerManager().ClearTimer(FireDelayHandle);
 }
 
 void APCPlayerCharacter::Aiming()
@@ -458,6 +496,26 @@ void APCPlayerCharacter::ChangeInven2()
 {
 	CurrentItemSelection = 1;
 	EquipItem();
+}
+
+void APCPlayerCharacter::Reload()
+{
+	if (InventoryComponent->Inventory[CurrentItemSelection].Bullets < CurrentStats.MagSize)
+	{
+		bIsAiming = 0;
+		bCanAim = 0;
+		bCanFire = 0;
+
+		FTimerHandle ReloadTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &APCPlayerCharacter::CompleteReload, 4.0f, false);
+	}
+}
+
+void APCPlayerCharacter::CompleteReload()
+{
+	InventoryComponent->Inventory[CurrentItemSelection].Bullets = CurrentStats.MagSize;
+	bCanAim = 1;
+	bCanFire = 1;
 }
 
 void APCPlayerCharacter::ShootRay()
@@ -618,7 +676,7 @@ void APCPlayerCharacter::EquipItem()
 	{
 		if (InventoryComponent && InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
 		{
-			int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection];
+			int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection].ID;
 
 			FName RowName = FName(*FString::FromInt(SelectedItem));
 			FString ContextString = TEXT("Item Data Context");

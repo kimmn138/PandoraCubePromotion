@@ -10,10 +10,20 @@ UPCInventoryComponent::UPCInventoryComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	Inventory.Add(1);
-	Inventory.Add(2);
-}
+	FDynamicInventoryItem NewItem;
+	NewItem.ID = 1;
+	NewItem.Bullets = 30;
+	NewItem.Scope = 1;
 
+	Inventory.Add(NewItem);
+
+	NewItem.ID = 2;
+	NewItem.Bullets = 25;
+	NewItem.Scope = 0;
+
+	Inventory.Add(NewItem);
+
+}
 
 // Called when the game starts
 void UPCInventoryComponent::BeginPlay()

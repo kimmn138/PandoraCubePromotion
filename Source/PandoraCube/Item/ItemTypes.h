@@ -56,3 +56,18 @@ struct FInventoryItem : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FWeaponStats Stats;
 };
+
+USTRUCT(BlueprintType)
+struct FDynamicInventoryItem : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
+    int32 ID;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
+    int32 Bullets;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
+    int32 Scope;
+};

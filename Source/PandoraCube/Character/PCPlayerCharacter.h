@@ -37,6 +37,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual FHandSwayValues  GetHandSwayFloats_Implementation() const override;
+
+	UFUNCTION()
 	void SetHandSwayFloats(float& OutSideMov, float& OutMouseX, float& OutMouseY) const;
 
 // Weapon Section
@@ -76,6 +78,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Decal")
 	TSubclassOf<class APCBlood> BloodDecal;
 
+	FTimerHandle FireDelayHandle;
+
+	void ReduceBullet();
+
+	bool BulletsLeft();
+
 // Camera Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
@@ -113,16 +121,24 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ChangeInven2Action;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ReloadAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Sprint();
 	void StopSprinting();
+	void StartFiring();
 	void Fire();
 	void StopFiring();
 	void Aiming();
 	void StopAiming();
 	void ChangeInven1();
 	void ChangeInven2();
+	void Reload();
+
+	UFUNCTION()
+	void CompleteReload();
 
 // Weapon Moving Section
 protected:
@@ -160,6 +176,7 @@ protected:
 	int32 bIsAttacking : 1;
 	int32 bIsAiming : 1;
 	int32 bCanAim : 1;
+	int32 bCanFire : 1;
 
 	FOnTimelineFloat ControllerRecoilInterpFunction{};
 
@@ -180,7 +197,7 @@ protected:
 	TObjectPtr<UDataTable> ItemDataTable;
 
 	void EquipItem();
-	int32 CurrentItemSelection = 1;
+	int32 CurrentItemSelection = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
 	FWeaponStats CurrentStats;
