@@ -11,6 +11,7 @@
 #include "Component/PCInventoryComponent.h"
 #include "Engine/DataTable.h"
 #include "Item/ItemTypes.h"
+#include "Animation/AnimMontage.h"
 #include "PCPlayerCharacter.generated.h"
 
 UCLASS()
@@ -177,6 +178,9 @@ protected:
 	int32 bIsAiming : 1;
 	int32 bCanAim : 1;
 	int32 bCanFire : 1;
+	int32 bStopLeftHandIK : 1;
+
+	virtual bool GetStopLeftHandIK_Implementation() const override;
 
 	FOnTimelineFloat ControllerRecoilInterpFunction{};
 
@@ -201,4 +205,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
 	FWeaponStats CurrentStats;
+
+// Animation Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+	TObjectPtr<class UAnimMontage> CurrentReloadAnimation;
 };

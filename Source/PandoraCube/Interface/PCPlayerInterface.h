@@ -45,4 +45,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
 	bool GetIsAim() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
+	bool GetStopLeftHandIK() const;
 };

@@ -34,6 +34,9 @@ struct FWeaponStats : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
     float InputRecoil;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    float ReloadTime;
 };
 
 USTRUCT(BlueprintType)
@@ -55,6 +58,9 @@ struct FInventoryItem : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FWeaponStats Stats;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    TObjectPtr<class UAnimMontage> ReloadAnimation;
 };
 
 USTRUCT(BlueprintType)

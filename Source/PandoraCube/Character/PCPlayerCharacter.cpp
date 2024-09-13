@@ -226,6 +226,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 
 	bCanAim = 1;
 	bCanFire = 1;
+	bStopLeftHandIK = 0;
 }
 
 //void APCPlayerCharacter::Tick(float DeltaTime)
@@ -505,17 +506,21 @@ void APCPlayerCharacter::Reload()
 		bIsAiming = 0;
 		bCanAim = 0;
 		bCanFire = 0;
+		bStopLeftHandIK = 1;
+
+		AnimInstanceRef->Montage_Play(CurrentReloadAnimation, 1.0f);
 
 		FTimerHandle ReloadTimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &APCPlayerCharacter::CompleteReload, 4.0f, false);
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &APCPlayerCharacter::CompleteReload, CurrentStats.ReloadTime, false);
 	}
 }
 
 void APCPlayerCharacter::CompleteReload()
 {
-	InventoryComponent->Inventory[CurrentItemSelection].Bullets = CurrentStats.MagSize;
 	bCanAim = 1;
 	bCanFire = 1;
+	InventoryComponent->Inventory[CurrentItemSelection].Bullets = CurrentStats.MagSize;
+	bStopLeftHandIK = 0;
 }
 
 void APCPlayerCharacter::ShootRay()
@@ -645,6 +650,11 @@ void APCPlayerCharacter::ControllerRecoil()
 	}
 }
 
+bool APCPlayerCharacter::GetStopLeftHandIK_Implementation() const
+{
+	return bStopLeftHandIK;
+}
+
 void APCPlayerCharacter::HandleTimelineProgress(float Value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Timeline Value: %f"), Value);
@@ -708,6 +718,7 @@ void APCPlayerCharacter::EquipItem()
 					EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
 
 					CurrentStats = Row->Stats;
+					CurrentReloadAnimation = Row->ReloadAnimation;
 				}
 			}
 		}
