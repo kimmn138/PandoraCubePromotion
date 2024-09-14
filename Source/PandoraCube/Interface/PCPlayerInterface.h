@@ -48,4 +48,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
 	bool GetStopLeftHandIK() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
+	float GetWallDistance() const;
 };

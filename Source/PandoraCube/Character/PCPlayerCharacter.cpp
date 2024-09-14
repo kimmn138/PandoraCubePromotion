@@ -25,7 +25,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(41.4f, 90.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -270,6 +270,10 @@ void APCPlayerCharacter::BeginPlay()
 		AimTimeline->SetTimelineLength(0.25f);
 		AimTimeline->SetLooping(false);
 	}
+
+	FTimerHandle CheckWallTimer;
+
+	GetWorld()->GetTimerManager().SetTimer(CheckWallTimer, this, &APCPlayerCharacter::CheckWallTick, 0.02f, true);
 }
 
 void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -354,6 +358,11 @@ bool APCPlayerCharacter::BulletsLeft()
 	{
 		return false;
 	}
+}
+
+float APCPlayerCharacter::GetWallDistance_Implementation() const
+{
+	return WallDistance;
 }
 
 void APCPlayerCharacter::SetCameraLocation(float Value)
@@ -521,6 +530,38 @@ void APCPlayerCharacter::CompleteReload()
 	bCanFire = 1;
 	InventoryComponent->Inventory[CurrentItemSelection].Bullets = CurrentStats.MagSize;
 	bStopLeftHandIK = 0;
+}
+
+void APCPlayerCharacter::CheckWallTick()
+{
+	ECollisionChannel TraceChannel = ECC_Camera;
+
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	FCollisionQueryParams TraceParams(FName(TEXT("")), false);
+	TraceParams.AddIgnoredActors(ActorsToIgnore);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		FollowCamera->GetComponentLocation(),
+		FollowCamera->GetForwardVector() * 200.0f + FollowCamera->GetComponentLocation(),
+		TraceChannel,
+		TraceParams
+	);
+
+	if (bHit)
+	{
+		FVector HitLocation = HitResult.Location;
+		float Distance = FVector::Dist(HitLocation, FollowCamera->GetComponentLocation());
+		Distance /= 200.0f;
+		WallDistance = Distance;
+	}
+	else
+	{
+		WallDistance = 1.0f;
+	}
 }
 
 void APCPlayerCharacter::ShootRay()

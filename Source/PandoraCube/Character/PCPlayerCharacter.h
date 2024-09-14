@@ -85,6 +85,8 @@ protected:
 
 	bool BulletsLeft();
 
+	virtual float GetWallDistance_Implementation() const override;
+
 // Camera Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
@@ -140,6 +142,11 @@ protected:
 
 	UFUNCTION()
 	void CompleteReload();
+
+	UFUNCTION()
+	void CheckWallTick();
+
+	float WallDistance;
 
 // Weapon Moving Section
 protected:
