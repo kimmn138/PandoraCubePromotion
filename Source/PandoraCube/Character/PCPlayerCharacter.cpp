@@ -18,6 +18,7 @@
 #include "Prop/PCBlood.h"
 #include "Blueprint/UserWidget.h"
 #include "Item/ItemTypes.h"
+#include "PickUps/PCPickUpBase.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -148,6 +149,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 		ReloadAction = InputActionReloadRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionDropItemRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_DropItem.IA_DropItem'"));
+	if (nullptr != InputActionDropItemRef.Object)
+	{
+		DropItemAction = InputActionDropItemRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> MetalParticleRef(TEXT("/Script/Engine.ParticleSystem'/Game/MilitaryWeapSilver/FX/P_Impact_Metal_Small_01.P_Impact_Metal_Small_01'"));
 	if (nullptr != MetalParticleRef.Object)
 	{
@@ -227,6 +234,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	bCanAim = 1;
 	bCanFire = 1;
 	bStopLeftHandIK = 0;
+
+	CurrentItemSelection = 0;
 }
 
 //void APCPlayerCharacter::Tick(float DeltaTime)
@@ -239,6 +248,9 @@ APCPlayerCharacter::APCPlayerCharacter()
 void APCPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Tags.Add(FName("Flesh"));
+	Tags.Add(FName("Player"));
 
 	EquipItem();
 
@@ -292,9 +304,10 @@ void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::StopFiring);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Started, this, &APCPlayerCharacter::Aiming);
 	EnhancedInputComponent->BindAction(AimingAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::StopAiming);
-	EnhancedInputComponent->BindAction(ChangeInven1Action, ETriggerEvent::Triggered, this, &APCPlayerCharacter::ChangeInven1);
-	EnhancedInputComponent->BindAction(ChangeInven2Action, ETriggerEvent::Triggered, this, &APCPlayerCharacter::ChangeInven2);
+	EnhancedInputComponent->BindAction(ChangeInven1Action, ETriggerEvent::Started, this, &APCPlayerCharacter::ChangeInven1);
+	EnhancedInputComponent->BindAction(ChangeInven2Action, ETriggerEvent::Started, this, &APCPlayerCharacter::ChangeInven2);
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Reload);
+	EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &APCPlayerCharacter::DropItem);
 }
 
 FHandSwayValues APCPlayerCharacter::GetHandSwayFloats_Implementation() const
@@ -350,14 +363,18 @@ void APCPlayerCharacter::ReduceBullet()
 
 bool APCPlayerCharacter::BulletsLeft()
 {
-	if (InventoryComponent->Inventory[CurrentItemSelection].Bullets >= 1)
+	if (InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
 	{
-		return true;
+		if (InventoryComponent->Inventory[CurrentItemSelection].Bullets >= 1)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 float APCPlayerCharacter::GetWallDistance_Implementation() const
@@ -368,12 +385,15 @@ float APCPlayerCharacter::GetWallDistance_Implementation() const
 void APCPlayerCharacter::SetCameraLocation(float Value)
 {
 	FVector LerpVector(1.0f, 4.5f, 13.0f);
-	USceneComponent* AimOffsetComponent = Cast<USceneComponent>(EquippedWeapon->GetDefaultSubobjectByName(TEXT("AimOffset")));
-	FVector AimOffsetLocation = AimOffsetComponent->GetRelativeLocation();
+	if (EquippedWeapon)
+	{
+		USceneComponent* AimOffsetComponent = Cast<USceneComponent>(EquippedWeapon->GetDefaultSubobjectByName(TEXT("AimOffset")));
+		FVector AimOffsetLocation = AimOffsetComponent->GetRelativeLocation();
 
-	FVector InterpolatedValue = FMath::Lerp(FVector(0.0f, 0.0f, 0.0f), LerpVector + AimOffsetLocation, Value);
+		FVector InterpolatedValue = FMath::Lerp(FVector(0.0f, 0.0f, 0.0f), LerpVector + AimOffsetLocation, Value);
 
-	CameraBoom->SetRelativeLocation(InterpolatedValue);
+		CameraBoom->SetRelativeLocation(InterpolatedValue);
+	}
 }
 
 bool APCPlayerCharacter::GetIsAim_Implementation() const
@@ -524,6 +544,30 @@ void APCPlayerCharacter::Reload()
 	}
 }
 
+void APCPlayerCharacter::DropItem()
+{
+	if (InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
+	{
+		if (!(InventoryComponent->Inventory[CurrentItemSelection].ID <= 0))
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+			FTransform DropTransform;
+			DropTransform.SetLocation(FollowCamera->GetForwardVector() * 200 + FollowCamera->GetComponentLocation());
+			APCPickUpBase* SpawnedPickup = GetWorld()->SpawnActor<APCPickUpBase>(CurrentWeaponPickupClass, DropTransform, SpawnParams);
+
+			if (SpawnedPickup)
+			{
+				SpawnedPickup->Item = InventoryComponent->Inventory[CurrentItemSelection];
+				InventoryComponent->Inventory.RemoveAt(CurrentItemSelection);
+				CurrentItemSelection = 0;
+				EquipItem();
+			}
+		}
+	}
+}
+
 void APCPlayerCharacter::CompleteReload()
 {
 	bCanAim = 1;
@@ -546,7 +590,7 @@ void APCPlayerCharacter::CheckWallTick()
 	bool bHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult,
 		FollowCamera->GetComponentLocation(),
-		FollowCamera->GetForwardVector() * 200.0f + FollowCamera->GetComponentLocation(),
+		FollowCamera->GetForwardVector() * MaxWallDistance + FollowCamera->GetComponentLocation(),
 		TraceChannel,
 		TraceParams
 	);
@@ -555,7 +599,7 @@ void APCPlayerCharacter::CheckWallTick()
 	{
 		FVector HitLocation = HitResult.Location;
 		float Distance = FVector::Dist(HitLocation, FollowCamera->GetComponentLocation());
-		Distance /= 200.0f;
+		Distance /= MaxWallDistance;
 		WallDistance = Distance;
 	}
 	else
@@ -728,40 +772,71 @@ void APCPlayerCharacter::EquipItem()
 		if (InventoryComponent && InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
 		{
 			int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection].ID;
+			UE_LOG(LogTemp, Warning, TEXT("Selected Item ID: %d"), SelectedItem);  // 로그로 SelectedItem 값 확인
 
 			FName RowName = FName(*FString::FromInt(SelectedItem));
 			FString ContextString = TEXT("Item Data Context");
 
-			FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
-
-			if (Row)
+			if (ItemDataTable)
 			{
-				WeaponClass = Row->WeaponClass;
-			}
+				FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
 
-			if (WeaponClass)
+				if (Row)
+				{
+					WeaponClass = Row->WeaponClass;
+
+					if (WeaponClass)
+					{
+						if (EquippedWeapon != nullptr)
+						{
+							EquippedWeapon->Destroy();
+							EquippedWeapon = nullptr;
+						}
+
+						EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
+
+						if (EquippedWeapon)
+						{
+							FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+							EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
+
+							EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
+							EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
+
+							CurrentStats = Row->Stats;
+							CurrentReloadAnimation = Row->ReloadAnimation;
+							CurrentWeaponPickupClass = Row->PickupClass;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			if (EquippedWeapon != nullptr)
 			{
-				if (EquippedWeapon != nullptr)
-				{
-					EquippedWeapon->Destroy();
-					EquippedWeapon = nullptr;
-				}
-
-				EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
-
-				if (EquippedWeapon)
-				{
-					FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-
-					EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
-
-					EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
-					EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
-
-					CurrentStats = Row->Stats;
-					CurrentReloadAnimation = Row->ReloadAnimation;
-				}
+				EquippedWeapon->Destroy();
+				EquippedWeapon = nullptr;
 			}
+		}
+	}
+}
+
+
+void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDynamicInventoryItem& Item)
+{
+	if (IsLocallyControlled())
+	{
+		if (InventoryComponent->Inventory.Num() >= InventoryComponent->MaxItemCount)
+		{
+
+		}
+		else
+		{
+			InventoryComponent->Inventory.Add(Item);
+			PickUp->Destroy();
+			CurrentItemSelection = 0;
+			EquipItem();
 		}
 	}
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Item/ItemTypes.h"
 #include "PCPlayerInterface.generated.h"
 
 USTRUCT(BlueprintType)
@@ -51,4 +52,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
 	float GetWallDistance() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
+	void AddItemToInventory(AActor* PickUp, FDynamicInventoryItem& Item);
 };

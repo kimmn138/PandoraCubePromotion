@@ -85,6 +85,7 @@ protected:
 
 	bool BulletsLeft();
 
+	float MaxWallDistance = 100.0f;
 	virtual float GetWallDistance_Implementation() const override;
 
 // Camera Section
@@ -127,6 +128,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ReloadAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> DropItemAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Sprint();
@@ -139,6 +143,7 @@ protected:
 	void ChangeInven1();
 	void ChangeInven2();
 	void Reload();
+	void DropItem();
 
 	UFUNCTION()
 	void CompleteReload();
@@ -208,10 +213,14 @@ protected:
 	TObjectPtr<UDataTable> ItemDataTable;
 
 	void EquipItem();
-	int32 CurrentItemSelection = 0;
+	int32 CurrentItemSelection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
 	FWeaponStats CurrentStats;
+
+	virtual void AddItemToInventory_Implementation(AActor* PickUp, FDynamicInventoryItem& Item) override;
+
+	TSubclassOf<class APCPickUpBase> CurrentWeaponPickupClass;
 
 // Animation Section
 protected:

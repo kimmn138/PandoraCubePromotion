@@ -61,6 +61,9 @@ struct FInventoryItem : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     TObjectPtr<class UAnimMontage> ReloadAnimation;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    TSubclassOf<class APCPickUpBase> PickupClass;
 };
 
 USTRUCT(BlueprintType)
