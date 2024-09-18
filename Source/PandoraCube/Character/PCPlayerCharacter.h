@@ -226,4 +226,9 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	TObjectPtr<class UAnimMontage> CurrentReloadAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
+	EAnimState CurrentAnimState;
+
+	virtual EAnimState GetAnimState_Implementation() const override;
 };

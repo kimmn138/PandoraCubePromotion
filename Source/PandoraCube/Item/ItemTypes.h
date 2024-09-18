@@ -3,12 +3,13 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "Weapon/PCWeaponBase.h"
+#include "Animation/AnimState.h"
 #include "ItemTypes.generated.h"
 
 UENUM(BlueprintType)
 enum class EItemType : uint8
 {
-    IT_Rifle   UMETA(DisplayName = "Rifle"),
+    IT_Rifle  UMETA(DisplayName = "Rifle"),
     IT_Pistol UMETA(DisplayName = "Pistol")
 };
 
@@ -64,6 +65,9 @@ struct FInventoryItem : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     TSubclassOf<class APCPickUpBase> PickupClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    EAnimState AnimState;
 };
 
 USTRUCT(BlueprintType)

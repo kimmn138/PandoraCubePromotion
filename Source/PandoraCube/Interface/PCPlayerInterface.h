@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Item/ItemTypes.h"
+#include "Animation/AnimState.h"
 #include "PCPlayerInterface.generated.h"
 
 USTRUCT(BlueprintType)
@@ -55,4 +56,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
 	void AddItemToInventory(AActor* PickUp, FDynamicInventoryItem& Item);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
+	EAnimState GetAnimState() const;
 };

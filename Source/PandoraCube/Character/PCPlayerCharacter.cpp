@@ -803,6 +803,7 @@ void APCPlayerCharacter::EquipItem()
 							EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
 							EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
 
+							CurrentAnimState = Row->AnimState;
 							CurrentStats = Row->Stats;
 							CurrentReloadAnimation = Row->ReloadAnimation;
 							CurrentWeaponPickupClass = Row->PickupClass;
@@ -818,6 +819,8 @@ void APCPlayerCharacter::EquipItem()
 				EquippedWeapon->Destroy();
 				EquippedWeapon = nullptr;
 			}
+
+			CurrentAnimState = EAnimState::Hands;
 		}
 	}
 }
@@ -839,4 +842,9 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 			EquipItem();
 		}
 	}
+}
+
+EAnimState APCPlayerCharacter::GetAnimState_Implementation() const
+{
+	return CurrentAnimState;
 }
