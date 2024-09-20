@@ -222,6 +222,8 @@ protected:
 
 	TSubclassOf<class APCPickUpBase> CurrentWeaponPickupClass;
 
+	EItemType WeaponType;
+
 // Animation Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)

@@ -17,7 +17,7 @@ UPCInventoryComponent::UPCInventoryComponent()
 
 	Inventory.Add(NewItem);
 
-	NewItem.ID = 2;
+	NewItem.ID = 3;
 	NewItem.Bullets = 25;
 	NewItem.Scope = 0;
 

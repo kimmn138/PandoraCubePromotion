@@ -452,40 +452,78 @@ void APCPlayerCharacter::StartFiring()
 
 void APCPlayerCharacter::Fire()
 {
-	if (bIsAttacking && bCanFire)
+	switch (WeaponType)
 	{
-		if (BulletsLeft())
-		{
-			FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
-			UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
-			ReduceBullet();
-			ShootRay();
-			FOutputDeviceNull Ar;
-			FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
-
-			bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
-			if (bSuccess)
+		case EItemType::IT_Rifle:
+			if (bIsAttacking && bCanFire)
 			{
-				UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
-				ControllerRecoil();
-
-				if (EquippedWeapon)
+				if (BulletsLeft())
 				{
-					USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
-					FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
+					ReduceBullet();
+					ShootRay();
+					FOutputDeviceNull Ar;
+					FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
 
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
+					if (bSuccess)
+					{
+						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						ControllerRecoil();
+
+						if (EquippedWeapon)
+						{
+							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
+							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
+
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+						}
+					}
+
+					GetWorld()->GetTimerManager().SetTimer(
+						FireDelayHandle,
+						this,
+						&APCPlayerCharacter::Fire,
+						CurrentStats.FireRate,
+						false
+					);
 				}
 			}
+			break;
 
-			GetWorld()->GetTimerManager().SetTimer(
-				FireDelayHandle,
-				this,
-				&APCPlayerCharacter::Fire,
-				CurrentStats.FireRate,
-				false
-			);
-		}
+		case EItemType::IT_Pistol:
+			if (bIsAttacking && bCanFire)
+			{
+				if (BulletsLeft())
+				{
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
+					ReduceBullet();
+					ShootRay();
+					FOutputDeviceNull Ar;
+					FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
+
+					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
+					if (bSuccess)
+					{
+						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						ControllerRecoil();
+
+						if (EquippedWeapon)
+						{
+							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
+							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
+
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+						}
+					}
+				}
+			}
+			break;
+
+		default:
+			break;
 	}
 }
 
@@ -807,6 +845,7 @@ void APCPlayerCharacter::EquipItem()
 							CurrentStats = Row->Stats;
 							CurrentReloadAnimation = Row->ReloadAnimation;
 							CurrentWeaponPickupClass = Row->PickupClass;
+							WeaponType = Row->Type;
 						}
 					}
 				}
