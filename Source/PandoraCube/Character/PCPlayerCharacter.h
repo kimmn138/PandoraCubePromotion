@@ -131,6 +131,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> DropItemAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> LeanLeftAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> LeanRightAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Sprint();
@@ -144,6 +150,10 @@ protected:
 	void ChangeInven2();
 	void Reload();
 	void DropItem();
+	void LeanLeftPressed();
+	void LeanLeftReleased();
+	void LeanRightPressed();
+	void LeanRightReleased();
 
 	UFUNCTION()
 	void CompleteReload();
@@ -191,6 +201,10 @@ protected:
 	int32 bCanAim : 1;
 	int32 bCanFire : 1;
 	int32 bStopLeftHandIK : 1;
+	int32 bLeanLeft : 1;
+	int32 bLeanRight : 1;
+
+	virtual void GetLeanBooleans_Implementation(bool& bLeft, bool& bRight) override;
 
 	virtual bool GetStopLeftHandIK_Implementation() const override;
 

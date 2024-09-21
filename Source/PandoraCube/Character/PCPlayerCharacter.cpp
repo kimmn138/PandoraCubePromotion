@@ -155,6 +155,18 @@ APCPlayerCharacter::APCPlayerCharacter()
 		DropItemAction = InputActionDropItemRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLeanLeftRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_LeanLeft.IA_LeanLeft'"));
+	if (nullptr != InputActionLeanLeftRef.Object)
+	{
+		LeanLeftAction = InputActionLeanLeftRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLeanRightRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_LeanRight.IA_LeanRight'"));
+	if (nullptr != InputActionLeanRightRef.Object)
+	{
+		LeanRightAction = InputActionLeanRightRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> MetalParticleRef(TEXT("/Script/Engine.ParticleSystem'/Game/MilitaryWeapSilver/FX/P_Impact_Metal_Small_01.P_Impact_Metal_Small_01'"));
 	if (nullptr != MetalParticleRef.Object)
 	{
@@ -308,6 +320,10 @@ void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(ChangeInven2Action, ETriggerEvent::Started, this, &APCPlayerCharacter::ChangeInven2);
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Reload);
 	EnhancedInputComponent->BindAction(DropItemAction, ETriggerEvent::Started, this, &APCPlayerCharacter::DropItem);
+	EnhancedInputComponent->BindAction(LeanLeftAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::LeanLeftPressed);
+	EnhancedInputComponent->BindAction(LeanLeftAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::LeanLeftReleased);
+	EnhancedInputComponent->BindAction(LeanRightAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::LeanRightPressed);
+	EnhancedInputComponent->BindAction(LeanRightAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::LeanRightReleased);
 }
 
 FHandSwayValues APCPlayerCharacter::GetHandSwayFloats_Implementation() const
@@ -608,6 +624,26 @@ void APCPlayerCharacter::DropItem()
 	}
 }
 
+void APCPlayerCharacter::LeanLeftPressed()
+{
+	bLeanLeft = 1;
+}
+
+void APCPlayerCharacter::LeanLeftReleased()
+{
+	bLeanLeft = 0;
+}
+
+void APCPlayerCharacter::LeanRightPressed()
+{
+	bLeanRight = 1;
+}
+
+void APCPlayerCharacter::LeanRightReleased()
+{
+	bLeanRight = 0;
+}
+
 void APCPlayerCharacter::CompleteReload()
 {
 	bCanAim = 1;
@@ -773,6 +809,12 @@ void APCPlayerCharacter::ControllerRecoil()
 	{
 		ControllerTimeline->PlayFromStart();
 	}
+}
+
+void APCPlayerCharacter::GetLeanBooleans_Implementation(bool& bLeft, bool& bRight)
+{
+	bLeft = bLeanLeft;
+	bRight = bLeanRight;
 }
 
 bool APCPlayerCharacter::GetStopLeftHandIK_Implementation() const

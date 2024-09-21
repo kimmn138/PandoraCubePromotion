@@ -62,4 +62,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
 	float GetAimAlpha() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PCPlayerInterface")
+	void GetLeanBooleans(bool& bIsLeaningLeft, bool& bIsLeaningRight);
 };
