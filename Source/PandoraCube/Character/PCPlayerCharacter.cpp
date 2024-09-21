@@ -43,12 +43,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh(), FName("neck_02"));
+	CameraBoom->SetRelativeLocation(FVector(16.654306f, 8.243503f, -1.975629));
 	CameraBoom->TargetArmLength = 0.0f;
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->SetRelativeLocation(FVector(15.165182f, 0.0f, 9.059375f));
 	FollowCamera->bUsePawnControlRotation = false;
 
 	ControllerTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("ControllerTimeline"));
@@ -402,13 +402,13 @@ void APCPlayerCharacter::SetCameraLocation(float Value)
 {
 	AimAlpha = Value;
 
-	FVector LerpVector(1.0f, 4.5f, 13.0f);
+	FVector LerpVector(14.0f, 7.2f, 7.0f);
 	if (EquippedWeapon)
 	{
 		USceneComponent* AimOffsetComponent = Cast<USceneComponent>(EquippedWeapon->GetDefaultSubobjectByName(TEXT("AimOffset")));
 		FVector AimOffsetLocation = AimOffsetComponent->GetRelativeLocation();
 
-		FVector InterpolatedValue = FMath::Lerp(FVector(0.0f, 0.0f, 0.0f), LerpVector + AimOffsetLocation, Value);
+		FVector InterpolatedValue = FMath::Lerp(FVector(16.654306f, 8.243503f, -1.975629), LerpVector + AimOffsetLocation, Value);
 
 		CameraBoom->SetRelativeLocation(InterpolatedValue);
 	}
