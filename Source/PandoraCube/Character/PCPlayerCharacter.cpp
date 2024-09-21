@@ -384,6 +384,8 @@ float APCPlayerCharacter::GetWallDistance_Implementation() const
 
 void APCPlayerCharacter::SetCameraLocation(float Value)
 {
+	AimAlpha = Value;
+
 	FVector LerpVector(1.0f, 4.5f, 13.0f);
 	if (EquippedWeapon)
 	{
@@ -801,6 +803,11 @@ void APCPlayerCharacter::HandleTimelineProgress(float Value)
 	{
 		AddControllerYawInput(ControllerYawValue);
 	}
+}
+
+float APCPlayerCharacter::GetAimAlpha_Implementation() const
+{
+	return AimAlpha;
 }
 
 void APCPlayerCharacter::EquipItem()

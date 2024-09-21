@@ -199,6 +199,11 @@ protected:
 	UFUNCTION()
 	void HandleTimelineProgress(float Value);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Aim, Meta = (AllowPrivateAccess = "true"))
+	float AimAlpha;
+
+	virtual float GetAimAlpha_Implementation() const override;
+
 // UI Widget Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
