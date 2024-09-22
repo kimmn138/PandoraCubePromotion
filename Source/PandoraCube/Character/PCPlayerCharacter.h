@@ -79,6 +79,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Decal")
 	TSubclassOf<class APCBlood> BloodDecal;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Decal")
+	TSubclassOf<class APCBulletHole> BulletHoleDecal;
+
 	FTimerHandle FireDelayHandle;
 
 	void ReduceBullet();

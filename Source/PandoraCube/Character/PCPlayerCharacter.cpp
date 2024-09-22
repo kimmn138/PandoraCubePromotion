@@ -16,6 +16,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/UnrealMathUtility.h"
 #include "Prop/PCBlood.h"
+#include "Prop/PCBulletHole.h"
 #include "Blueprint/UserWidget.h"
 #include "Item/ItemTypes.h"
 #include "PickUps/PCPickUpBase.h"
@@ -219,6 +220,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 	if (nullptr != BloodDecalRef.Class)
 	{
 		BloodDecal = BloodDecalRef.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<APCBulletHole> BulletHoleDecalRef(TEXT("/Script/CoreUObject.Class'/Script/PandoraCube.PCBulletHole'"));
+	if (nullptr != BulletHoleDecalRef.Class)
+	{
+		BulletHoleDecal = BulletHoleDecalRef.Class;
 	}
 
 	static ConstructorHelpers::FClassFinder<UUserWidget> PlayerMainWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PlayerMainWidget.PlayerMainWidget_C"));
@@ -709,7 +716,11 @@ void APCPlayerCharacter::ShootRay()
 	if (bHit)
 	{
 		AActor* HitActor = HitResult.GetActor();
-		FVector HitLocation = HitResult.ImpactPoint;
+		FVector HitLocation = HitResult.Location;
+
+		FTransform BulletHoleTransform;
+		BulletHoleTransform.SetLocation(HitLocation);
+		BulletHoleTransform.SetRotation(FRotationMatrix::MakeFromX(HitResult.Normal).ToQuat());
 
 		if (HitActor)
 		{
@@ -723,6 +734,7 @@ void APCPlayerCharacter::ShootRay()
 				{
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
 					UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
+					AActor* NewMetalBulletHole = GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
 					bParticleSpawned = true;
 					break;
 				}

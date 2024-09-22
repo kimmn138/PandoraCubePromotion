@@ -29,6 +29,7 @@ void APCBlood::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Blood->SetLifeSpan(4.0f);
 }
 
 // Called every frame
