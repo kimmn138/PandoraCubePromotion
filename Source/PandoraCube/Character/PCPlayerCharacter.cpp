@@ -257,12 +257,23 @@ APCPlayerCharacter::APCPlayerCharacter()
 	CurrentItemSelection = 0;
 }
 
-//void APCPlayerCharacter::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//
-//	Aiming();
-//}
+void APCPlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	AimCurrent = FMath::FInterpTo(AimCurrent, AimAlpha, DeltaTime, 12.0f);
+
+	FVector LerpVector(14.0f, 7.2f, 7.0f);
+	if (EquippedWeapon)
+	{
+		USceneComponent* AimOffsetComponent = Cast<USceneComponent>(EquippedWeapon->GetDefaultSubobjectByName(TEXT("AimOffset")));
+		FVector AimOffsetLocation = AimOffsetComponent->GetRelativeLocation();
+
+		FVector InterpolatedValue = FMath::Lerp(FVector(16.654306f, 8.243503f, -1.975629), LerpVector + AimOffsetLocation, AimCurrent);
+
+		CameraBoom->SetRelativeLocation(InterpolatedValue);
+	}
+}
 
 void APCPlayerCharacter::BeginPlay()
 {
@@ -408,17 +419,6 @@ float APCPlayerCharacter::GetWallDistance_Implementation() const
 void APCPlayerCharacter::SetCameraLocation(float Value)
 {
 	AimAlpha = Value;
-
-	FVector LerpVector(14.0f, 7.2f, 7.0f);
-	if (EquippedWeapon)
-	{
-		USceneComponent* AimOffsetComponent = Cast<USceneComponent>(EquippedWeapon->GetDefaultSubobjectByName(TEXT("AimOffset")));
-		FVector AimOffsetLocation = AimOffsetComponent->GetRelativeLocation();
-
-		FVector InterpolatedValue = FMath::Lerp(FVector(16.654306f, 8.243503f, -1.975629), LerpVector + AimOffsetLocation, Value);
-
-		CameraBoom->SetRelativeLocation(InterpolatedValue);
-	}
 }
 
 bool APCPlayerCharacter::GetIsAim_Implementation() const

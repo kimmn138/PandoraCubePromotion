@@ -23,7 +23,7 @@ public:
 	// Sets default values for this character's properties
 	APCPlayerCharacter();
 
-	//virtual void Tick(float DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -218,6 +218,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Aim, Meta = (AllowPrivateAccess = "true"))
 	float AimAlpha;
+	float AimCurrent;
 
 	virtual float GetAimAlpha_Implementation() const override;
 
