@@ -10,7 +10,8 @@ UENUM(BlueprintType)
 enum class EItemType : uint8
 {
     IT_Rifle  UMETA(DisplayName = "Rifle"),
-    IT_Pistol UMETA(DisplayName = "Pistol")
+    IT_Pistol UMETA(DisplayName = "Pistol"),
+    IT_Shotgun UMETA(DisplayName = "Shotgun")
 };
 
 USTRUCT(BlueprintType)
@@ -38,6 +39,12 @@ struct FWeaponStats : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
     float ReloadTime;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    int32 ShoutgunPelletCount;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    float ShoutgunSpreadAngle;
 };
 
 USTRUCT(BlueprintType)

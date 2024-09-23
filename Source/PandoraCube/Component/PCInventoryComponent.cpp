@@ -11,14 +11,14 @@ UPCInventoryComponent::UPCInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	FDynamicInventoryItem NewItem;
-	NewItem.ID = 1;
-	NewItem.Bullets = 30;
-	NewItem.Scope = 1;
+	NewItem.ID = 4;
+	NewItem.Bullets = 8;
+	NewItem.Scope = 0;
 
 	Inventory.Add(NewItem);
 
-	NewItem.ID = 3;
-	NewItem.Bullets = 25;
+	NewItem.ID = 1;
+	NewItem.Bullets = 30;
 	NewItem.Scope = 0;
 
 	Inventory.Add(NewItem);

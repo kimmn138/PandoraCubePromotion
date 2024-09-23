@@ -255,6 +255,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	bStopLeftHandIK = 0;
 
 	CurrentItemSelection = 0;
+
+	bCooling = 0;
 }
 
 void APCPlayerCharacter::Tick(float DeltaTime)
@@ -416,6 +418,11 @@ float APCPlayerCharacter::GetWallDistance_Implementation() const
 	return WallDistance;
 }
 
+void APCPlayerCharacter::ResetFire()
+{
+	bCooling = 0;
+}
+
 void APCPlayerCharacter::SetCameraLocation(float Value)
 {
 	AimAlpha = Value;
@@ -518,7 +525,7 @@ void APCPlayerCharacter::Fire()
 			break;
 
 		case EItemType::IT_Pistol:
-			if (bIsAttacking && bCanFire)
+			if (bIsAttacking && bCanFire && !bCooling)
 			{
 				if (BulletsLeft())
 				{
@@ -543,6 +550,46 @@ void APCPlayerCharacter::Fire()
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
 						}
 					}
+
+					bCooling = 1;
+
+					FTimerHandle FireRateHandle;
+					GetWorld()->GetTimerManager().SetTimer(FireRateHandle, this, &APCPlayerCharacter::ResetFire, CurrentStats.FireRate, false);
+				}
+			}
+			break;
+
+		case EItemType::IT_Shotgun:
+			if (bIsAttacking && bCanFire && !bCooling)
+			{
+				if (BulletsLeft())
+				{
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
+					ReduceBullet();
+					ShotgunShootRay();
+					FOutputDeviceNull Ar;
+					FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
+
+					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
+					if (bSuccess)
+					{
+						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						ControllerRecoil();
+
+						if (EquippedWeapon)
+						{
+							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
+							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
+
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+						}
+					}
+
+					bCooling = 1;
+
+					FTimerHandle FireRateHandle;
+					GetWorld()->GetTimerManager().SetTimer(FireRateHandle, this, &APCPlayerCharacter::ResetFire, CurrentStats.FireRate, false);
 				}
 			}
 			break;
@@ -815,6 +862,133 @@ void APCPlayerCharacter::ShootRay()
 	);*/
 }
 
+void APCPlayerCharacter::ShotgunShootRay()
+{
+	int32 NumPellets = CurrentStats.ShoutgunPelletCount;
+	float SpreadAngle = CurrentStats.ShoutgunSpreadAngle;
+	if (bIsAiming)
+	{
+		SpreadAngle /= 2.0f;
+	}
+
+	FVector Start = FollowCamera->GetComponentLocation();
+	FRotator FireRotation = FollowCamera->GetForwardVector().Rotation();
+
+	ECollisionChannel TraceChannel = ECC_Camera;
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+
+	for (int32 i = 0; i < NumPellets; i++)
+	{
+		FRotator PelletRotation = FireRotation;
+		PelletRotation.Yaw += FMath::RandRange(-SpreadAngle, SpreadAngle);
+		PelletRotation.Pitch += FMath::RandRange(-SpreadAngle, SpreadAngle);
+
+		FVector End = Start + (PelletRotation.Vector() * CurrentStats.Range);
+
+		FHitResult HitResult;
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(
+			HitResult,
+			Start,
+			End,
+			TraceChannel,
+			TraceParams
+		);
+
+		if (bHit)
+		{
+			AActor* HitActor = HitResult.GetActor();
+			FVector HitLocation = HitResult.Location;
+
+			FTransform BulletHoleTransform;
+			BulletHoleTransform.SetLocation(HitLocation);
+			BulletHoleTransform.SetRotation(FRotationMatrix::MakeFromX(HitResult.Normal).ToQuat());
+
+			if (HitActor)
+			{
+				bool bParticleSpawned = false;
+
+				for (const FName& Tag : HitActor->Tags)
+				{
+					if (Tag == "Metal")
+					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
+						UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
+						GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
+						bParticleSpawned = true;
+						break;
+					}
+					else if (Tag == "Flesh")
+					{
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+						UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
+						bParticleSpawned = true;
+
+						FCollisionQueryParams NotEnemyTraceParams;
+						NotEnemyTraceParams.AddIgnoredActor(this);
+						NotEnemyTraceParams.AddIgnoredActor(HitActor);
+
+						FHitResult HitEnemyResult;
+						FVector EndPoint = FollowCamera->GetForwardVector() * 1500 + HitLocation;
+
+						bool bEnemyHit = GetWorld()->LineTraceSingleByChannel(
+							HitEnemyResult,
+							HitLocation,
+							EndPoint,
+							ECC_Visibility,
+							NotEnemyTraceParams
+						);
+
+						if (bEnemyHit)
+						{
+							FVector HitNormal = HitEnemyResult.Normal;
+							FRotator RotationFromNormal = FRotationMatrix::MakeFromX(HitNormal).Rotator();
+
+							FTransform BloodTransform(RotationFromNormal, HitEnemyResult.ImpactPoint);
+
+							FActorSpawnParameters SpawnParams;
+							SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+							APCBlood* SpawnedBloodDecal = GetWorld()->SpawnActor<APCBlood>(BloodDecal, BloodTransform, SpawnParams);
+							check(SpawnedBloodDecal != nullptr);
+						}
+
+						break;
+					}
+				}
+
+				if (!bParticleSpawned)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponOtherParticle, HitLocation, FRotator::ZeroRotator);
+					UGameplayStatics::PlaySoundAtLocation(this, OtherHitSound, HitLocation);
+				}
+
+				UGameplayStatics::ApplyDamage(
+					HitActor,
+					CurrentStats.Damage / NumPellets,
+					GetController(),
+					this,
+					nullptr
+				);
+			}
+		}
+
+		FColor LineColor = bHit ? FColor::Green : FColor::Red;
+		/*DrawDebugLine(
+			GetWorld(),
+			Start,
+			End,
+			LineColor,
+			false,
+			1.0f,
+			0,
+			1.0f
+		);*/
+	}
+}
+
+
 void APCPlayerCharacter::ControllerRecoil()
 {
 	if (ControllerRecoilCurve && !ControllerTimeline->IsPlaying())
@@ -871,7 +1045,6 @@ void APCPlayerCharacter::EquipItem()
 		if (InventoryComponent && InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
 		{
 			int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection].ID;
-			UE_LOG(LogTemp, Warning, TEXT("Selected Item ID: %d"), SelectedItem);  // 로그로 SelectedItem 값 확인
 
 			FName RowName = FName(*FString::FromInt(SelectedItem));
 			FString ContextString = TEXT("Item Data Context");

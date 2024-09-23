@@ -91,6 +91,11 @@ protected:
 	float MaxWallDistance = 100.0f;
 	virtual float GetWallDistance_Implementation() const override;
 
+	int32 bCooling : 1;
+
+	UFUNCTION()
+	void ResetFire();
+
 // Camera Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
@@ -145,6 +150,7 @@ protected:
 	void Sprint();
 	void StopSprinting();
 	void StartFiring();
+	UFUNCTION()
 	void Fire();
 	void StopFiring();
 	void Aiming();
@@ -188,6 +194,7 @@ protected:
 	virtual bool  GetIsAim_Implementation() const override;
 
 	void ShootRay();
+	void ShotgunShootRay();
 
 	void ControllerRecoil();
 
