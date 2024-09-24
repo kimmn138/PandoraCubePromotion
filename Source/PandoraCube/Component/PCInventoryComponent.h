@@ -29,5 +29,5 @@ public:
 	TArray<FDynamicInventoryItem> Inventory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int32 MaxItemCount = 2;
+	int32 MaxItemCount = 3;
 };

@@ -23,6 +23,29 @@ UPCInventoryComponent::UPCInventoryComponent()
 
 	Inventory.Add(NewItem);
 
+	NewItem.ID = 5;
+	NewItem.Bullets = 30;
+	NewItem.Scope = 0;
+
+	Inventory.Add(NewItem);
+
+	NewItem.ID = 6;
+	NewItem.Bullets = 5;
+	NewItem.Scope = 0;
+
+	Inventory.Add(NewItem);
+
+	NewItem.ID = 2;
+	NewItem.Bullets = 30;
+	NewItem.Scope = 0;
+
+	Inventory.Add(NewItem);
+
+	NewItem.ID = 3;
+	NewItem.Bullets = 8;
+	NewItem.Scope = 0;
+
+	Inventory.Add(NewItem);
 }
 
 // Called when the game starts

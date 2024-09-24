@@ -11,7 +11,9 @@ enum class EItemType : uint8
 {
     IT_Rifle  UMETA(DisplayName = "Rifle"),
     IT_Pistol UMETA(DisplayName = "Pistol"),
-    IT_Shotgun UMETA(DisplayName = "Shotgun")
+    IT_Shotgun UMETA(DisplayName = "Shotgun"),
+    IT_Sniper UMETA(DisplayName = "Sniper"),
+    IT_SMG UMETA(DisplayName = "SMG")
 };
 
 USTRUCT(BlueprintType)

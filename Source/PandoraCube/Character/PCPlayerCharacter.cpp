@@ -32,7 +32,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 540.0f);
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 550.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 100.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -275,6 +275,7 @@ void APCPlayerCharacter::Tick(float DeltaTime)
 
 		CameraBoom->SetRelativeLocation(InterpolatedValue);
 	}
+	//Aiming();
 }
 
 void APCPlayerCharacter::BeginPlay()
@@ -594,6 +595,44 @@ void APCPlayerCharacter::Fire()
 			}
 			break;
 
+		case EItemType::IT_SMG:
+			if (bIsAttacking && bCanFire)
+			{
+				if (BulletsLeft())
+				{
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
+					ReduceBullet();
+					ShootRay();
+					FOutputDeviceNull Ar;
+					FString FunctionNameWithArgs = FString::Printf(TEXT("ProceduralRecoil %f"), CurrentStats.ProceduralRecoil);
+
+					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
+					if (bSuccess)
+					{
+						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						ControllerRecoil();
+
+						if (EquippedWeapon)
+						{
+							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
+							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
+
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+						}
+					}
+
+					GetWorld()->GetTimerManager().SetTimer(
+						FireDelayHandle,
+						this,
+						&APCPlayerCharacter::Fire,
+						CurrentStats.FireRate,
+						false
+					);
+				}
+			}
+			break;
+
 		default:
 			break;
 	}
@@ -614,6 +653,7 @@ void APCPlayerCharacter::Aiming()
 		{
 			AimTimeline->Play();
 		}
+		FollowCamera->SetFieldOfView(50.0f);
 	}
 }
 
@@ -623,6 +663,7 @@ void APCPlayerCharacter::StopAiming()
 	if (AimCurve)
 	{
 		AimTimeline->Reverse();
+		FollowCamera->SetFieldOfView(90.0f);
 	}
 }
 
@@ -642,6 +683,10 @@ void APCPlayerCharacter::Reload()
 {
 	if (InventoryComponent->Inventory[CurrentItemSelection].Bullets < CurrentStats.MagSize)
 	{
+		if (bIsAiming)
+		{
+			StopAiming();
+		}
 		bIsAiming = 0;
 		bCanAim = 0;
 		bCanFire = 0;
