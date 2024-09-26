@@ -91,7 +91,7 @@ protected:
 	float MaxWallDistance = 100.0f;
 	virtual float GetWallDistance_Implementation() const override;
 
-	int32 bCooling : 1;
+	uint8 bCooling : 1;
 
 	UFUNCTION()
 	void ResetFire();
@@ -206,13 +206,13 @@ protected:
 	float MouseX = 0.0f;
 	float MouseY = 0.0f;
 
-	int32 bIsAttacking : 1;
-	int32 bIsAiming : 1;
-	int32 bCanAim : 1;
-	int32 bCanFire : 1;
-	int32 bStopLeftHandIK : 1;
-	int32 bLeanLeft : 1;
-	int32 bLeanRight : 1;
+	uint8 bIsAttacking : 1;
+	uint8 bIsAiming : 1;
+	uint8 bCanAim : 1;
+	uint8 bCanFire : 1;
+	uint8 bStopLeftHandIK : 1;
+	uint8 bLeanLeft : 1;
+	uint8 bLeanRight : 1;
 
 	virtual void GetLeanBooleans_Implementation(bool& bLeft, bool& bRight) override;
 
