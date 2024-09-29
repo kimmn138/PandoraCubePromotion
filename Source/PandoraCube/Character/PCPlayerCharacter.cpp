@@ -20,6 +20,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Item/ItemTypes.h"
 #include "PickUps/PCPickUpBase.h"
+#include "Physics/PCCollision.h"
+#include "Engine/DamageEvents.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -28,7 +30,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 	bUseControllerRotationRoll = false;
 
 	GetCapsuleComponent()->InitCapsuleSize(41.4f, 90.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_PCCAPSULE);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 540.0f);
@@ -40,7 +42,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh(), FName("neck_02"));
@@ -319,6 +321,21 @@ void APCPlayerCharacter::BeginPlay()
 	FTimerHandle CheckWallTimer;
 
 	GetWorld()->GetTimerManager().SetTimer(CheckWallTimer, this, &APCPlayerCharacter::CheckWallTick, 0.02f, true);
+}
+
+float APCPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	SetDead();
+
+	return DamageAmount;
+}
+
+void APCPlayerCharacter::SetDead()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	SetActorEnableCollision(false);
 }
 
 void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -863,6 +880,9 @@ void APCPlayerCharacter::ShootRay()
 
 						APCBlood* SpawnedBloodDecal = GetWorld()->SpawnActor<APCBlood>(BloodDecal, BloodTransform, SpawnParams);
 						check(SpawnedBloodDecal != nullptr);
+
+						FDamageEvent DamageEvent;
+						HitEnemyResult.GetActor()->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
 					}
 
 					break;
