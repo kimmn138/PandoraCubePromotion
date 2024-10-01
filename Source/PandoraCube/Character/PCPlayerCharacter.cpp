@@ -17,11 +17,12 @@
 #include "Math/UnrealMathUtility.h"
 #include "Prop/PCBlood.h"
 #include "Prop/PCBulletHole.h"
-#include "Blueprint/UserWidget.h"
 #include "Item/ItemTypes.h"
 #include "PickUps/PCPickUpBase.h"
 #include "Physics/PCCollision.h"
 #include "Engine/DamageEvents.h"
+#include "CharacterStat/PCCharacterStatComponent.h"
+#include "UI/PCPlayerMainWidget.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -61,6 +62,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	AimInterpFunction.BindUFunction(this, FName("SetCameraLocation"));
 
 	InventoryComponent = CreateDefaultSubobject<UPCInventoryComponent>(TEXT("Inventory"));
+
+	Stat = CreateDefaultSubobject<UPCCharacterStatComponent>(TEXT("Stat"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
 	if (CharacterMeshRef.Object)
@@ -230,13 +233,14 @@ APCPlayerCharacter::APCPlayerCharacter()
 		BulletHoleDecal = BulletHoleDecalRef.Class;
 	}
 
-	static ConstructorHelpers::FClassFinder<UUserWidget> PlayerMainWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PlayerMainWidget.PlayerMainWidget_C"));
+	static ConstructorHelpers::FClassFinder<UPCPlayerMainWidget> PlayerMainWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PlayerMainWidget.PlayerMainWidget_C"));
 	if (PlayerMainWidgetRef.Class)
 	{
-		UUserWidget* PlayerWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), PlayerMainWidgetRef.Class);
+		UPCPlayerMainWidget* PlayerWidgetInstance = CreateWidget<UPCPlayerMainWidget>(GetWorld(), PlayerMainWidgetRef.Class);
 		if (PlayerWidgetInstance)
 		{
 			PlayerWidgetInstance->AddToViewport();
+			SetupCharacterWidget();
 		}
 	}
 
@@ -259,6 +263,13 @@ APCPlayerCharacter::APCPlayerCharacter()
 	CurrentItemSelection = 0;
 
 	bCooling = 0;
+}
+
+void APCPlayerCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	Stat->OnHpZero.AddUObject(this, &APCPlayerCharacter::SetDead);
 }
 
 void APCPlayerCharacter::Tick(float DeltaTime)
@@ -327,7 +338,7 @@ float APCPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetDead();
+	Stat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
 }
@@ -852,6 +863,8 @@ void APCPlayerCharacter::ShootRay()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
 					UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 					bParticleSpawned = true;
+					FDamageEvent DamageEvent;
+					HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
 
 					FCollisionQueryParams NotEnemyTraceParams;
 					NotEnemyTraceParams.AddIgnoredActor(this);
@@ -880,9 +893,6 @@ void APCPlayerCharacter::ShootRay()
 
 						APCBlood* SpawnedBloodDecal = GetWorld()->SpawnActor<APCBlood>(BloodDecal, BloodTransform, SpawnParams);
 						check(SpawnedBloodDecal != nullptr);
-
-						FDamageEvent DamageEvent;
-						HitEnemyResult.GetActor()->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
 					}
 
 					break;
@@ -894,23 +904,7 @@ void APCPlayerCharacter::ShootRay()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponOtherParticle, HitLocation, FRotator::ZeroRotator);
 				UGameplayStatics::PlaySoundAtLocation(this, OtherHitSound, HitLocation);
 			}
-
-			UGameplayStatics::ApplyDamage(
-				HitActor,
-				CurrentStats.Damage,
-				GetController(),
-				this,
-				nullptr
-			);
 		}
-
-		UGameplayStatics::ApplyDamage(
-			HitActor,
-			CurrentStats.Damage,
-			GetController(),
-			this,
-			nullptr
-		);
 	}
 
 	FColor LineColor = bHit ? FColor::Green : FColor::Red;
@@ -990,6 +984,9 @@ void APCPlayerCharacter::ShotgunShootRay()
 						UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 						bParticleSpawned = true;
 
+						FDamageEvent DamageEvent;
+						HitActor->TakeDamage(CurrentStats.Damage / NumPellets, DamageEvent, GetController(), this);
+
 						FCollisionQueryParams NotEnemyTraceParams;
 						NotEnemyTraceParams.AddIgnoredActor(this);
 						NotEnemyTraceParams.AddIgnoredActor(HitActor);
@@ -1028,14 +1025,6 @@ void APCPlayerCharacter::ShotgunShootRay()
 					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponOtherParticle, HitLocation, FRotator::ZeroRotator);
 					UGameplayStatics::PlaySoundAtLocation(this, OtherHitSound, HitLocation);
 				}
-
-				UGameplayStatics::ApplyDamage(
-					HitActor,
-					CurrentStats.Damage / NumPellets,
-					GetController(),
-					this,
-					nullptr
-				);
 			}
 		}
 
@@ -1101,6 +1090,16 @@ void APCPlayerCharacter::HandleTimelineProgress(float Value)
 float APCPlayerCharacter::GetAimAlpha_Implementation() const
 {
 	return AimAlpha;
+}
+
+void APCPlayerCharacter::SetupCharacterWidget()
+{
+	if (PlayerMainWidget)
+	{
+		PlayerMainWidget->SetMaxHp(Stat->GetMaxHp());
+		PlayerMainWidget->UpdateHpText(Stat->GetCurrentHp());
+		Stat->OnHpChanged.AddUObject(PlayerMainWidget, &UPCPlayerMainWidget::UpdateHpText);
+	}
 }
 
 void APCPlayerCharacter::EquipItem()

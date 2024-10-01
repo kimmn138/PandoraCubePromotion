@@ -15,6 +15,8 @@ class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnima
 public:
 	APCEnemyCharacterBase();
 
+	virtual void PostInitializeComponents() override;
+
 protected:
 	void Attack();
 
@@ -47,4 +49,8 @@ protected:
 	void PlayDeadAnimation();
 
 	float DeadEventDelayTime = 5.0f;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPCCharacterStatComponent> Stat;
 };

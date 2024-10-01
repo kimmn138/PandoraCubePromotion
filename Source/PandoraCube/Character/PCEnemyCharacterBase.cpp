@@ -8,6 +8,7 @@
 #include "PCComboActionData.h"
 #include "Physics/PCCollision.h"
 #include "Engine/DamageEvents.h"
+#include "CharacterStat/PCCharacterStatComponent.h"
 
 // Sets default values
 APCEnemyCharacterBase::APCEnemyCharacterBase()
@@ -30,6 +31,8 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+
+	Stat = CreateDefaultSubobject<UPCCharacterStatComponent>(TEXT("Stat"));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Zombie/Mesh/SK_Zombie.SK_Zombie'"));
 	if (CharacterMeshRef.Object)
@@ -62,6 +65,13 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	}
 
 	Tags.Add(FName("Flesh"));
+}
+
+void APCEnemyCharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	Stat->OnHpZero.AddUObject(this, &APCEnemyCharacterBase::SetDead);
 }
 
 void APCEnemyCharacterBase::Attack()
@@ -173,7 +183,7 @@ float APCEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	SetDead();
+	Stat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
 }

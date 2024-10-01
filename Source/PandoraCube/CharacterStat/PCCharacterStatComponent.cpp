@@ -1,22 +1,22 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CharacterStat/PCPlayerStatComponent.h"
+#include "CharacterStat/PCCharacterStatComponent.h"
 
-UPCPlayerStatComponent::UPCPlayerStatComponent()
+UPCCharacterStatComponent::UPCCharacterStatComponent()
 {
 	MaxHp = 100.0f;
 	CurrentHp = MaxHp;
 }
 
-void UPCPlayerStatComponent::BeginPlay()
+void UPCCharacterStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetHp(MaxHp);
 }
 
-float UPCPlayerStatComponent::ApplyDamage(float InDamage)
+float UPCCharacterStatComponent::ApplyDamage(float InDamage)
 {
 	const float PrevHp = CurrentHp;
 	const float ActualDamage = FMath::Clamp<float>(InDamage, 0, InDamage);
@@ -30,9 +30,10 @@ float UPCPlayerStatComponent::ApplyDamage(float InDamage)
 	return ActualDamage;
 }
 
-void UPCPlayerStatComponent::SetHp(float NewHp)
+void UPCCharacterStatComponent::SetHp(float NewHp)
 {
 	CurrentHp = FMath::Clamp<float>(NewHp, 0.0f, MaxHp);
 
 	OnHpChanged.Broadcast(CurrentHp);
 }
+

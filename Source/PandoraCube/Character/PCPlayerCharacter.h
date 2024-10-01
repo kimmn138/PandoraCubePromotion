@@ -23,6 +23,8 @@ public:
 	// Sets default values for this character's properties
 	APCPlayerCharacter();
 
+	virtual void PostInitializeComponents() override;
+
 	virtual void Tick(float DeltaTime) override;
 
 protected:
@@ -234,10 +236,17 @@ protected:
 
 	virtual float GetAimAlpha_Implementation() const override;
 
+// Stat Section
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UPCCharacterStatComponent> Stat;
+
 // UI Widget Section
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UUserWidget> PlayerMainWidget;
+	TObjectPtr<class UPCPlayerMainWidget> PlayerMainWidget;
+
+	void SetupCharacterWidget();
 
 // Inventory Section
 protected:

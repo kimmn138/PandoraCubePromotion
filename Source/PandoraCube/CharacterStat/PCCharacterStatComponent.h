@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "PCPlayerStatComponent.generated.h"
+#include "PCCharacterStatComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float /*CurrentHp*/);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PANDORACUBE_API UPCPlayerStatComponent : public UActorComponent
+class PANDORACUBE_API UPCCharacterStatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UPCPlayerStatComponent();
+	UPCCharacterStatComponent();
 
 protected:
 	// Called when the game starts
@@ -38,5 +38,5 @@ protected:
 
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
 	float CurrentHp;
-
+		
 };
