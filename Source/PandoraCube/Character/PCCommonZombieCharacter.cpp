@@ -18,6 +18,8 @@ APCCommonZombieCharacter::APCCommonZombieCharacter()
 			CurrentStats.AttackRate = Row->AttackRate;
 			CurrentStats.AttackRange = Row->AttackRange;
 			CurrentStats.AttackRadius = Row->AttackRadius;
+			CurrentStats.BBAsset = Row->BBAsset;
+			CurrentStats.BTAsset = Row->BTAsset;
 			Stat->SetMaxHp(Row->MaxHp);
 			Stat->SetCurrentHp(Row->MaxHp);
 		}

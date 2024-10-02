@@ -9,6 +9,7 @@
 #include "Physics/PCCollision.h"
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/PCCharacterStatComponent.h"
+#include "AI/PCAIController.h"
 
 // Sets default values
 APCEnemyCharacterBase::APCEnemyCharacterBase()
@@ -33,6 +34,9 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	Stat = CreateDefaultSubobject<UPCCharacterStatComponent>(TEXT("Stat"));
+
+	AIControllerClass = APCAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Zombie/Mesh/SK_Zombie.SK_Zombie'"));
 	if (CharacterMeshRef.Object)

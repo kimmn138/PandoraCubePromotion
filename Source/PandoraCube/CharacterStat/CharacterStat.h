@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardData.h"
 #include "CharacterStat.generated.h"
 
 USTRUCT(BlueprintType)
@@ -29,6 +31,12 @@ struct FCharacterStats : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterStat")
     float AttackRadius;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterStat")
+    UBlackboardData* BBAsset;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterStat")
+    UBehaviorTree* BTAsset;
 };
 
 USTRUCT(BlueprintType)

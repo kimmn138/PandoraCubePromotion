@@ -7,10 +7,11 @@
 #include "Interface/PCAnimationAttackInterface.h"
 #include "Engine/DataTable.h"
 #include "CharacterStat/CharacterStat.h"
+#include "Interface/PCAIControllerInterface.h"
 #include "PCEnemyCharacterBase.generated.h"
 
 UCLASS()
-class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnimationAttackInterface
+class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnimationAttackInterface, public IPCAIControllerInterface
 {
 	GENERATED_BODY()
 
@@ -61,4 +62,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	FCharacterStats CurrentStats;
+
+public:
+	virtual UBlackboardData* GetBlackboardData() const override { return CurrentStats.BBAsset; }
+	virtual UBehaviorTree* GetBehaviorTree() const override { return CurrentStats.BTAsset; }
 };
