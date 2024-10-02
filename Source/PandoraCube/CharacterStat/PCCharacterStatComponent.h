@@ -28,6 +28,8 @@ public:
 
 	FORCEINLINE float GetMaxHp() { return MaxHp; }
 	FORCEINLINE float GetCurrentHp() { return CurrentHp; }
+	FORCEINLINE void SetMaxHp(float NewHp) { MaxHp = NewHp; }
+	FORCEINLINE void SetCurrentHp(float NewHp) { CurrentHp = NewHp; }
 	float ApplyDamage(float InDamage);
 
 protected:

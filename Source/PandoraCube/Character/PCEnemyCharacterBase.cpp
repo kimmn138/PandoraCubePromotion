@@ -64,6 +64,12 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 		DeadMontage = DeadMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UDataTable> StatDataTableRef(TEXT("/Script/Engine.DataTable'/Game/PandoraCube/CharacterStat/DT_CharacterStat.DT_CharacterStat'"));
+	if (nullptr != StatDataTableRef.Object)
+	{
+		StatDataTable = StatDataTableRef.Object;
+	}
+
 	Tags.Add(FName("Flesh"));
 }
 
@@ -155,9 +161,9 @@ void APCEnemyCharacterBase::AttackHitCheck()
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
-	const float AttackRange = 40.0f;
-	const float AttackRadius = 50.0f;
-	const float AttackDamage = 30.0f;
+	const float AttackRange = CurrentStats.AttackRange;
+	const float AttackRadius = CurrentStats.AttackRadius;
+	const float AttackDamage = CurrentStats.Damage;
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
@@ -205,24 +211,7 @@ void APCEnemyCharacterBase::SetDead()
 
 void APCEnemyCharacterBase::PlayDeadAnimation()
 {
-	if (!GetMesh())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Mesh is nullptr in PlayDeadAnimation"));
-		return;
-	}
-
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AnimInstance is nullptr in PlayDeadAnimation"));
-		return;
-	}
-
-	if (!DeadMontage)
-	{
-		UE_LOG(LogTemp, Error, TEXT("DeadMontage is nullptr in PlayDeadAnimation"));
-		return;
-	}
 
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);

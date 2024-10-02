@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/PCAnimationAttackInterface.h"
+#include "Engine/DataTable.h"
+#include "CharacterStat/CharacterStat.h"
 #include "PCEnemyCharacterBase.generated.h"
 
 UCLASS()
@@ -53,4 +55,10 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPCCharacterStatComponent> Stat;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> StatDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	FCharacterStats CurrentStats;
 };
