@@ -29,5 +29,8 @@ protected:
 	TObjectPtr<class UTextBlock> HpText;
 
 	UPROPERTY()
+	TObjectPtr<class UTextBlock> HpInt;
+
+	UPROPERTY()
 	float MaxHp;
 };

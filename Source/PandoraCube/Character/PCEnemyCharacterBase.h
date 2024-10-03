@@ -8,10 +8,11 @@
 #include "Engine/DataTable.h"
 #include "CharacterStat/CharacterStat.h"
 #include "Interface/PCAIControllerInterface.h"
+#include "Interface/PCCharacterInterface.h"
 #include "PCEnemyCharacterBase.generated.h"
 
 UCLASS()
-class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnimationAttackInterface, public IPCAIControllerInterface
+class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnimationAttackInterface, public IPCAIControllerInterface, public IPCCharacterInterface
 {
 	GENERATED_BODY()
 
@@ -66,4 +67,17 @@ protected:
 public:
 	virtual UBlackboardData* GetBlackboardData() const override { return CurrentStats.BBAsset; }
 	virtual UBehaviorTree* GetBehaviorTree() const override { return CurrentStats.BTAsset; }
+
+protected:
+	virtual float GetAIPatrolRadius() override;
+	virtual float GetAIDetectRange() override;
+	virtual float GetAIAttackRange() override;
+	virtual float GetAITurnSpeed() override;
+
+	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
+	virtual void AttackByAI() override;
+
+	FAICharacterAttackFinished OnAttackFinished;
+
+	void NotifyComboActionEnd();
 };

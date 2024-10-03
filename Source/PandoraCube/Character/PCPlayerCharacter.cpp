@@ -236,10 +236,10 @@ APCPlayerCharacter::APCPlayerCharacter()
 	static ConstructorHelpers::FClassFinder<UPCPlayerMainWidget> PlayerMainWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PlayerMainWidget.PlayerMainWidget_C"));
 	if (PlayerMainWidgetRef.Class)
 	{
-		UPCPlayerMainWidget* PlayerWidgetInstance = CreateWidget<UPCPlayerMainWidget>(GetWorld(), PlayerMainWidgetRef.Class);
-		if (PlayerWidgetInstance)
+		PlayerMainWidget = CreateWidget<UPCPlayerMainWidget>(GetWorld(), PlayerMainWidgetRef.Class);
+		if (PlayerMainWidget)
 		{
-			PlayerWidgetInstance->AddToViewport();
+			PlayerMainWidget->AddToViewport();
 			SetupCharacterWidget();
 		}
 	}

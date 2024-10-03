@@ -6,6 +6,7 @@
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Interface/PCAIControllerInterface.h"
+#include "PCAI.h"
 
 APCAIController::APCAIController()
 {
@@ -17,6 +18,8 @@ void APCAIController::RunAI()
 	UBlackboardComponent* BlackboardPtr = Blackboard.Get();
 	if (UseBlackboard(BBAsset, BlackboardPtr))
 	{
+		Blackboard->SetValueAsVector(BBKEY_HOMEPOS, GetPawn()->GetActorLocation());
+
 		bool RunResult = RunBehaviorTree(BTAsset);
 		ensure(RunResult);
 	}

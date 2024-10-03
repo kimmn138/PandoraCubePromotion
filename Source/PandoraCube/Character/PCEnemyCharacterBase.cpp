@@ -130,6 +130,8 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 	ensure(CurrentCombo != 0);
 	CurrentCombo = 0;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	NotifyComboActionEnd();
 }
 
 void APCEnemyCharacterBase::SetComboCheckTimer()
@@ -219,5 +221,40 @@ void APCEnemyCharacterBase::PlayDeadAnimation()
 
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
+}
+
+float APCEnemyCharacterBase::GetAIPatrolRadius()
+{
+	return 900.0f;
+}
+
+float APCEnemyCharacterBase::GetAIDetectRange()
+{
+	return 1000.0f;
+}
+
+float APCEnemyCharacterBase::GetAIAttackRange()
+{
+	return CurrentStats.AttackRange + CurrentStats.AttackRadius * 2;
+}
+
+float APCEnemyCharacterBase::GetAITurnSpeed()
+{
+	return 2.0f;
+}
+
+void APCEnemyCharacterBase::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
+{
+	OnAttackFinished = InOnAttackFinished;
+}
+
+void APCEnemyCharacterBase::AttackByAI()
+{
+	ProcessComboCommand();
+}
+
+void APCEnemyCharacterBase::NotifyComboActionEnd()
+{
+	OnAttackFinished.ExecuteIfBound();
 }
 

@@ -14,7 +14,10 @@ void UPCPlayerMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	HpText = Cast<UTextBlock>(GetWidgetFromName(TEXT("HpInt")));
+	HpInt = Cast<UTextBlock>(GetWidgetFromName(TEXT("HpInt")));
+	ensure(HpInt);
+
+	HpText = Cast<UTextBlock>(GetWidgetFromName(TEXT("HpText")));
 	ensure(HpText);
 
 }
@@ -22,11 +25,27 @@ void UPCPlayerMainWidget::NativeConstruct()
 void UPCPlayerMainWidget::UpdateHpText(float NewCurrentHp)
 {
 	ensure(MaxHp > 0.0f);
-	if (HpText)
+	if (HpInt)
 	{
 		int32 CurrentHpInt = static_cast<int32>(NewCurrentHp);
 		FText HpTextValue = FText::AsNumber(CurrentHpInt);
 
-		HpText->SetText(HpTextValue);
+		HpInt->SetText(HpTextValue);
+
+		if (CurrentHpInt <= 30)
+		{
+			HpInt->SetColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.0f, 0.0f, 1.0f)));
+			HpText->SetColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.0f, 0.0f, 1.0f)));
+		}
+		else if (CurrentHpInt <= 70)
+		{
+			HpInt->SetColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.5f, 0.0f, 1.0f)));
+			HpText->SetColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.5f, 0.0f, 1.0f)));
+		}
+		else
+		{
+			HpInt->SetColorAndOpacity(FSlateColor(FLinearColor(0.0f, 1.0f, 0.0f, 1.0f)));
+			HpText->SetColorAndOpacity(FSlateColor(FLinearColor(0.0f, 1.0f, 0.0f, 1.0f)));
+		}
 	}
 }
