@@ -138,7 +138,6 @@ void APCEnemyCharacterBase::SetComboCheckTimer()
 {
 	int32 ComboIndex = CurrentCombo - 1;
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
-
 	const float AttackSpeedRate = 1.0f;
 	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
 	if (ComboEffectiveTime > 0.0f)
@@ -178,6 +177,7 @@ void APCEnemyCharacterBase::AttackHitCheck()
 	{
 		FDamageEvent DamageEvent;
 		OutHitResult.GetActor()->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+		HasNextComboCommand = true;
 	}
 
 #if ENABLE_DRAW_DEBUG
