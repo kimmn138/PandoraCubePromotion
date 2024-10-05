@@ -818,7 +818,7 @@ void APCPlayerCharacter::ShootRay()
 	FVector Start = FollowCamera->GetComponentLocation();
 	FVector End = Start + Result;
 
-	ECollisionChannel TraceChannel = ECC_Camera;
+	ECollisionChannel TraceChannel = ECC_Visibility;
 
 	FHitResult HitResult;
 
@@ -864,7 +864,16 @@ void APCPlayerCharacter::ShootRay()
 					UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 					bParticleSpawned = true;
 					FDamageEvent DamageEvent;
-					HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
+					if (HitResult.BoneName == "head")
+					{
+						UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
+						HitActor->TakeDamage(CurrentStats.Damage * 2, DamageEvent, GetController(), this);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
+						HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
+					}
 
 					FCollisionQueryParams NotEnemyTraceParams;
 					NotEnemyTraceParams.AddIgnoredActor(this);
@@ -906,19 +915,6 @@ void APCPlayerCharacter::ShootRay()
 			}
 		}
 	}
-
-	FColor LineColor = bHit ? FColor::Green : FColor::Red;
-
-	/*DrawDebugLine(
-		GetWorld(),
-		Start,
-		End,
-		LineColor,
-		true,
-		0.0f,
-		0,
-		5.0f
-	);*/
 }
 
 void APCPlayerCharacter::ShotgunShootRay()
@@ -933,7 +929,7 @@ void APCPlayerCharacter::ShotgunShootRay()
 	FVector Start = FollowCamera->GetComponentLocation();
 	FRotator FireRotation = FollowCamera->GetForwardVector().Rotation();
 
-	ECollisionChannel TraceChannel = ECC_Camera;
+	ECollisionChannel TraceChannel = ECC_Visibility;
 	FCollisionQueryParams TraceParams;
 	TraceParams.AddIgnoredActor(this);
 
@@ -985,7 +981,16 @@ void APCPlayerCharacter::ShotgunShootRay()
 						bParticleSpawned = true;
 
 						FDamageEvent DamageEvent;
-						HitActor->TakeDamage(CurrentStats.Damage / NumPellets, DamageEvent, GetController(), this);
+						if (HitResult.BoneName == "head")
+						{
+							UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
+							HitActor->TakeDamage(CurrentStats.Damage / NumPellets * 2, DamageEvent, GetController(), this);
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
+							HitActor->TakeDamage(CurrentStats.Damage / NumPellets, DamageEvent, GetController(), this);
+						}
 
 						FCollisionQueryParams NotEnemyTraceParams;
 						NotEnemyTraceParams.AddIgnoredActor(this);
@@ -1027,18 +1032,6 @@ void APCPlayerCharacter::ShotgunShootRay()
 				}
 			}
 		}
-
-		FColor LineColor = bHit ? FColor::Green : FColor::Red;
-		/*DrawDebugLine(
-			GetWorld(),
-			Start,
-			End,
-			LineColor,
-			false,
-			1.0f,
-			0,
-			1.0f
-		);*/
 	}
 }
 
@@ -1064,7 +1057,6 @@ bool APCPlayerCharacter::GetStopLeftHandIK_Implementation() const
 
 void APCPlayerCharacter::HandleTimelineProgress(float Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Timeline Value: %f"), Value);
 	float InterpolatedValue = FMath::Lerp(0.0f, CurrentStats.InputRecoil, Value);
 
 	float SelectedPitch = bIsAiming ? -0.25 : -1.0;
