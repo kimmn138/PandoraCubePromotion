@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "CharacterStat/CharacterStat.h"
 #include "PCAIController.generated.h"
 
 /**
@@ -29,4 +30,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UBehaviorTree> BTAsset;
+
+	UPROPERTY()
+	FCharacterStats CharacterStats;
 };

@@ -1,26 +1,26 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/PCCommonZombieCharacter.h"
+#include "Character/PCBookHeadZombieCharacter.h"
 #include "CharacterStat/PCCharacterStatComponent.h"
 #include "Animation/AnimMontage.h"
 #include "PCComboActionData.h"
 
-APCCommonZombieCharacter::APCCommonZombieCharacter()
+APCBookHeadZombieCharacter::APCBookHeadZombieCharacter()
 {
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Zombie/Mesh/SK_Zombie.SK_Zombie'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/BookHeadMonster/Meshes/BookHeadMonster.BookHeadMonster'"));
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_CommonZombieAnimationBlueprint.ABP_CommonZombieAnimationBlueprint_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_BookHeadMonsterAnimationBlueprint.ABP_BookHeadMonsterAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_ComboAttack.AM_ComboAttack'"));
+	/*static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_ComboAttack.AM_ComboAttack'"));
 	if (ComboActionMontageRef.Object)
 	{
 		ComboActionMontage = ComboActionMontageRef.Object;
@@ -36,19 +36,17 @@ APCCommonZombieCharacter::APCCommonZombieCharacter()
 	if (DeadMontageRef.Object)
 	{
 		DeadMontage = DeadMontageRef.Object;
-	}
+	}*/
 
 	FString ContextString = TEXT("Stat Data Context");
 	if (StatDataTable)
 	{
-		FCharacterStats* Row = StatDataTable->FindRow<FCharacterStats>(TEXT("1"), ContextString);
+		FCharacterStats* Row = StatDataTable->FindRow<FCharacterStats>(TEXT("2"), ContextString);
 
 		if (Row)
 		{
 			CurrentStats.Damage = Row->Damage;
 			CurrentStats.MaxHp = Row->MaxHp;
-			CurrentStats.Speed = Row->Speed;
-			CurrentStats.MaxSpeed = Row->MaxSpeed;
 			CurrentStats.AttackRate = Row->AttackRate;
 			CurrentStats.AttackRange = Row->AttackRange;
 			CurrentStats.AttackRadius = Row->AttackRadius;

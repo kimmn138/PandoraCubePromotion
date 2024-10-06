@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
+#include "CharacterStat/CharacterStat.h"
 #include "PCAIControllerInterface.generated.h"
 
 // This class does not need to be modified.
@@ -26,4 +27,5 @@ class PANDORACUBE_API IPCAIControllerInterface
 public:
 	virtual UBlackboardData* GetBlackboardData() const = 0;
 	virtual UBehaviorTree* GetBehaviorTree() const = 0;
+	virtual FCharacterStats GetCharacterStats() const = 0;
 };

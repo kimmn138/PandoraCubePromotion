@@ -67,6 +67,7 @@ protected:
 public:
 	virtual UBlackboardData* GetBlackboardData() const override { return CurrentStats.BBAsset; }
 	virtual UBehaviorTree* GetBehaviorTree() const override { return CurrentStats.BTAsset; }
+	virtual FCharacterStats GetCharacterStats() const override { return CurrentStats; }
 
 protected:
 	virtual float GetAIPatrolRadius() override;

@@ -25,7 +25,7 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = CurrentStats.Speed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
@@ -37,36 +37,6 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 
 	AIControllerClass = APCAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Zombie/Mesh/SK_Zombie.SK_Zombie'"));
-	if (CharacterMeshRef.Object)
-	{
-		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	}
-
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_EnemyAnimationBlueprint.ABP_EnemyAnimationBlueprint_C"));
-	if (AnimInstanceClassRef.Class)
-	{
-		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
-	}
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_ComboAttack.AM_ComboAttack'"));
-	if (ComboActionMontageRef.Object)
-	{
-		ComboActionMontage = ComboActionMontageRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UPCComboActionData> ComboActionDataRef(TEXT("/Script/PandoraCube.PCComboActionData'/Game/PandoraCube/CharacterAction/PCA_ComboAttack.PCA_ComboAttack'"));
-	if (ComboActionDataRef.Object)
-	{
-		ComboActionData = ComboActionDataRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_Dead.AM_Dead'"));
-	if (DeadMontageRef.Object)
-	{
-		DeadMontage = DeadMontageRef.Object;
-	}
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> StatDataTableRef(TEXT("/Script/Engine.DataTable'/Game/PandoraCube/CharacterStat/DT_CharacterStat.DT_CharacterStat'"));
 	if (nullptr != StatDataTableRef.Object)

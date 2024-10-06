@@ -19,6 +19,8 @@ void APCAIController::RunAI()
 	if (UseBlackboard(BBAsset, BlackboardPtr))
 	{
 		Blackboard->SetValueAsVector(BBKEY_HOMEPOS, GetPawn()->GetActorLocation());
+		Blackboard->SetValueAsFloat(BBKEY_SPEED, CharacterStats.Speed);
+		Blackboard->SetValueAsFloat(BBKEY_MAXSPEED, CharacterStats.MaxSpeed);
 
 		bool RunResult = RunBehaviorTree(BTAsset);
 		ensure(RunResult);
@@ -43,6 +45,7 @@ void APCAIController::OnPossess(APawn* InPawn)
 	{
 		BBAsset = AICharacter->GetBlackboardData();
 		BTAsset = AICharacter->GetBehaviorTree();
+		CharacterStats = AICharacter->GetCharacterStats();
 	}
 
 	RunAI();

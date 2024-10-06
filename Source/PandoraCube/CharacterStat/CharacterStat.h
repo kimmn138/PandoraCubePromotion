@@ -21,6 +21,9 @@ struct FCharacterStats : public FTableRowBase
     float Speed;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterStat")
+    float MaxSpeed;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterStat")
     float MaxHp;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterStat")
