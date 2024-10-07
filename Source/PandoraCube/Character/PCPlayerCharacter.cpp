@@ -23,6 +23,7 @@
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/PCCharacterStatComponent.h"
 #include "UI/PCPlayerMainWidget.h"
+#include "Character/PCEnemyCharacterBase.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -864,15 +865,27 @@ void APCPlayerCharacter::ShootRay()
 					UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 					bParticleSpawned = true;
 					FDamageEvent DamageEvent;
-					if (HitResult.BoneName == "head")
+
+					APCEnemyCharacterBase* HitZombie = Cast<APCEnemyCharacterBase>(HitActor);
+					if (HitZombie)
 					{
-						UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
-						HitActor->TakeDamage(CurrentStats.Damage * 2, DamageEvent, GetController(), this);
-					}
-					else
-					{
-						UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
-						HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
+						FVector ImpactDirection = HitResult.TraceEnd - HitResult.TraceStart;
+						ImpactDirection.Normalize();
+
+						float KnockbackForce = CurrentStats.Force;
+
+						if (HitResult.BoneName == "head")
+						{
+							UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
+							HitActor->TakeDamage(CurrentStats.Damage * 2, DamageEvent, GetController(), this);
+							HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce * 1.3f);
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
+							HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
+							HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce);
+						}
 					}
 
 					FCollisionQueryParams NotEnemyTraceParams;
@@ -981,15 +994,27 @@ void APCPlayerCharacter::ShotgunShootRay()
 						bParticleSpawned = true;
 
 						FDamageEvent DamageEvent;
-						if (HitResult.BoneName == "head")
+
+						APCEnemyCharacterBase* HitZombie = Cast<APCEnemyCharacterBase>(HitActor);
+						if (HitZombie)
 						{
-							UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
-							HitActor->TakeDamage(CurrentStats.Damage / NumPellets * 2, DamageEvent, GetController(), this);
-						}
-						else
-						{
-							UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
-							HitActor->TakeDamage(CurrentStats.Damage / NumPellets, DamageEvent, GetController(), this);
+							FVector ImpactDirection = HitResult.TraceEnd - HitResult.TraceStart;
+							ImpactDirection.Normalize();
+
+							float KnockbackForce = CurrentStats.Force;
+
+							if (HitResult.BoneName == "head")
+							{
+								UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
+								HitActor->TakeDamage(CurrentStats.Damage / NumPellets * 2, DamageEvent, GetController(), this);
+								HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce * 1.3f / NumPellets);
+							}
+							else
+							{
+								UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
+								HitActor->TakeDamage(CurrentStats.Damage / NumPellets, DamageEvent, GetController(), this);
+								HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce / NumPellets);
+							}
 						}
 
 						FCollisionQueryParams NotEnemyTraceParams;

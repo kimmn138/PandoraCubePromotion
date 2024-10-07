@@ -21,6 +21,8 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
+	void TakeKnockBack(const FVector& HitLocation, const FVector& ImpactDirection, float Force);
+
 protected:
 	void Attack();
 

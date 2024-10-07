@@ -43,6 +43,9 @@ struct FWeaponStats : public FTableRowBase
     float ReloadTime;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
+    float Force;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
     int32 ShoutgunPelletCount;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")

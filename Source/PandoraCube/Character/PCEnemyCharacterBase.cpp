@@ -54,6 +54,18 @@ void APCEnemyCharacterBase::PostInitializeComponents()
 	Stat->OnHpZero.AddUObject(this, &APCEnemyCharacterBase::SetDead);
 }
 
+void APCEnemyCharacterBase::TakeKnockBack(const FVector& HitLocation, const FVector& ImpactDirection, float Force)
+{
+	FVector KnockbackDirection = ImpactDirection;
+	KnockbackDirection.Z = 0;
+	KnockbackDirection.Normalize();
+
+	FVector KnockbackForce = KnockbackDirection * Force;
+
+	UE_LOG(LogTemp, Warning, TEXT("KnockBack!!"));
+	LaunchCharacter(KnockbackForce, true, false);
+}
+
 void APCEnemyCharacterBase::Attack()
 {
 	ProcessComboCommand();
@@ -150,15 +162,15 @@ void APCEnemyCharacterBase::AttackHitCheck()
 		HasNextComboCommand = true;
 	}
 
-#if ENABLE_DRAW_DEBUG
-
-	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-	float CapsuleHalfHeight = AttackRange * 0.5f;
-	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
-
-	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-
-#endif
+//#if ENABLE_DRAW_DEBUG
+//
+//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+//	float CapsuleHalfHeight = AttackRange * 0.5f;
+//	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
+//
+//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+//
+//#endif
 }
 
 float APCEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

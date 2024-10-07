@@ -20,7 +20,7 @@ APCBookHeadZombieCharacter::APCBookHeadZombieCharacter()
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 
-	/*static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_ComboAttack.AM_ComboAttack'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboActionMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_BookHeadZombieComboAttack.AM_BookHeadZombieComboAttack'"));
 	if (ComboActionMontageRef.Object)
 	{
 		ComboActionMontage = ComboActionMontageRef.Object;
@@ -32,11 +32,11 @@ APCBookHeadZombieCharacter::APCBookHeadZombieCharacter()
 		ComboActionData = ComboActionDataRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_Dead.AM_Dead'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeadMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_BookHeadZombieDead.AM_BookHeadZombieDead'"));
 	if (DeadMontageRef.Object)
 	{
 		DeadMontage = DeadMontageRef.Object;
-	}*/
+	}
 
 	FString ContextString = TEXT("Stat Data Context");
 	if (StatDataTable)
@@ -47,6 +47,8 @@ APCBookHeadZombieCharacter::APCBookHeadZombieCharacter()
 		{
 			CurrentStats.Damage = Row->Damage;
 			CurrentStats.MaxHp = Row->MaxHp;
+			CurrentStats.Speed = Row->Speed;
+			CurrentStats.MaxSpeed = Row->MaxSpeed;
 			CurrentStats.AttackRate = Row->AttackRate;
 			CurrentStats.AttackRange = Row->AttackRange;
 			CurrentStats.AttackRadius = Row->AttackRadius;
