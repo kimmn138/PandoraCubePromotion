@@ -861,9 +861,6 @@ void APCPlayerCharacter::ShootRay()
 				}
 				else if (Tag == "Flesh")
 				{
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
-					UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
-					bParticleSpawned = true;
 					FDamageEvent DamageEvent;
 
 					APCEnemyCharacterBase* HitZombie = Cast<APCEnemyCharacterBase>(HitActor);
@@ -874,15 +871,30 @@ void APCPlayerCharacter::ShootRay()
 
 						float KnockbackForce = CurrentStats.Force;
 
-						if (HitResult.BoneName == "head")
+						if (HitResult.BoneName == "jaw_01")
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Blocked"));
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
+							UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
+							AActor* NewMetalBulletHole = GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
+							bParticleSpawned = true;
+							HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce * 0.7f);
+						}
+						else if (HitResult.BoneName == "head")
 						{
 							UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+							UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
+							bParticleSpawned = true;
 							HitActor->TakeDamage(CurrentStats.Damage * 2, DamageEvent, GetController(), this);
 							HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce * 1.3f);
 						}
 						else
 						{
 							UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+							UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
+							bParticleSpawned = true;
 							HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
 							HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce);
 						}
@@ -989,10 +1001,6 @@ void APCPlayerCharacter::ShotgunShootRay()
 					}
 					else if (Tag == "Flesh")
 					{
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
-						UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
-						bParticleSpawned = true;
-
 						FDamageEvent DamageEvent;
 
 						APCEnemyCharacterBase* HitZombie = Cast<APCEnemyCharacterBase>(HitActor);
@@ -1003,15 +1011,30 @@ void APCPlayerCharacter::ShotgunShootRay()
 
 							float KnockbackForce = CurrentStats.Force;
 
-							if (HitResult.BoneName == "head")
+							if (HitResult.BoneName == "jaw_01")
+							{
+								UE_LOG(LogTemp, Warning, TEXT("Blocked"));
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
+								UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
+								GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
+								bParticleSpawned = true;
+								HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce * 0.7f);
+							}
+							else if (HitResult.BoneName == "head")
 							{
 								UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+								UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
+								bParticleSpawned = true;
 								HitActor->TakeDamage(CurrentStats.Damage / NumPellets * 2, DamageEvent, GetController(), this);
 								HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce * 1.3f / NumPellets);
 							}
 							else
 							{
 								UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+								UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
+								bParticleSpawned = true;
 								HitActor->TakeDamage(CurrentStats.Damage / NumPellets, DamageEvent, GetController(), this);
 								HitZombie->TakeKnockBack(HitResult.ImpactPoint, ImpactDirection, KnockbackForce / NumPellets);
 							}

@@ -51,8 +51,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> DeadMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UAnimMontage> HitMontage;
+
 	virtual void SetDead();
 	void PlayDeadAnimation();
+	void PlayHitAnimation();
 
 	float DeadEventDelayTime = 5.0f;
 

@@ -177,6 +177,7 @@ float APCEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	PlayHitAnimation();
 	Stat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
@@ -199,10 +200,19 @@ void APCEnemyCharacterBase::SetDead()
 
 void APCEnemyCharacterBase::PlayDeadAnimation()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Play DeadMontage"));
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 	AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(DeadMontage, 1.0f);
+}
+
+void APCEnemyCharacterBase::PlayHitAnimation()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	//AnimInstance->StopAllMontages(0.0f);
+	AnimInstance->Montage_Play(HitMontage, 1.0f);
 }
 
 float APCEnemyCharacterBase::GetAIPatrolRadius()

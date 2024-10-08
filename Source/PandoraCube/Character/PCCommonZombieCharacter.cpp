@@ -38,6 +38,12 @@ APCCommonZombieCharacter::APCCommonZombieCharacter()
 		DeadMontage = DeadMontageRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> HitMontageRef(TEXT("/Script/Engine.AnimMontage'/Game/PandoraCube/Blueprints/Animation/AM_Hit.AM_Hit'"));
+	if (HitMontageRef.Object)
+	{
+		HitMontage = HitMontageRef.Object;
+	}
+
 	FString ContextString = TEXT("Stat Data Context");
 	if (StatDataTable)
 	{
