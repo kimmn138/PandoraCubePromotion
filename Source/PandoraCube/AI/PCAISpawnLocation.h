@@ -12,15 +12,14 @@ class PANDORACUBE_API APCAISpawnLocation : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	APCAISpawnLocation();
+    APCAISpawnLocation();
+
+    FVector GetSpawnLocation() const;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    UPROPERTY(VisibleAnywhere, Category = "Spawn")
+    TObjectPtr<class UBillboardComponent> BillboardComponent;
 
 };

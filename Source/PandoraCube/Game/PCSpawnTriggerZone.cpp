@@ -2,26 +2,36 @@
 
 
 #include "Game/PCSpawnTriggerZone.h"
+#include "PCSpawnManager.h"
+#include "Components/BoxComponent.h"
+#include "Character/PCPlayerCharacter.h"
 
-// Sets default values
 APCSpawnTriggerZone::APCSpawnTriggerZone()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+    RootComponent = TriggerBox;
+
+    TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APCSpawnTriggerZone::OnOverlapBegin);
 
 }
 
-// Called when the game starts or when spawned
 void APCSpawnTriggerZone::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
+
+    if (SpawnManager)
+    {
+        SpawnManager->RegisterSpawnLocationsForTriggerZone(this, LinkedSpawnLocations);
+    }
 }
 
-// Called every frame
-void APCSpawnTriggerZone::Tick(float DeltaTime)
+void APCSpawnTriggerZone::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Super::Tick(DeltaTime);
-
+    if (OtherActor->IsA(APCPlayerCharacter::StaticClass()))
+    {
+        if (SpawnManager)
+        {
+            SpawnManager->ActivateSpawnLocations(LinkedSpawnLocations);
+        }
+    }
 }
-
