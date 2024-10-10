@@ -2,43 +2,26 @@
 
 
 #include "Game/PCSpawnManager.h"
-#include "AI/PCAISpawnLocation.h"
-#include "Kismet/GameplayStatics.h"
 
-APCSpawnManager* APCSpawnManager::Instance = nullptr;
-
-APCSpawnManager* APCSpawnManager::GetInstance(UWorld* World)
+// Sets default values
+APCSpawnManager::APCSpawnManager()
 {
-    if (!Instance)
-    {
-        Instance = World->SpawnActor<APCSpawnManager>();
-    }
-    return Instance;
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
 }
 
-void APCSpawnManager::ActivateSpawnLocations(const TArray<AActor*>& NewSpawnLocations)
+// Called when the game starts or when spawned
+void APCSpawnManager::BeginPlay()
 {
-    ActiveSpawnLocations = NewSpawnLocations;
+	Super::BeginPlay();
+	
 }
 
-void APCSpawnManager::SpawnZombiesInWave()
+// Called every frame
+void APCSpawnManager::Tick(float DeltaTime)
 {
-    for (AActor* SpawnLocationActor : ActiveSpawnLocations)
-    {
-        if (APCAISpawnLocation* Location = Cast<APCAISpawnLocation>(SpawnLocationActor))
-        {
-            if (ZombieClass)
-            {
-                GetWorld()->SpawnActor<APCCommonZombieCharacter>(ZombieClass, Location->GetActorLocation(), FRotator::ZeroRotator);
-            }
-        }
-    }
+	Super::Tick(DeltaTime);
+
 }
 
-void APCSpawnManager::RegisterSpawnLocationsForTriggerZone(AActor* TriggerZone, const TArray<AActor*>& SpawnLocations)
-{
-    if (TriggerZone)
-    {
-        TriggerZoneToSpawnLocationsMap.Add(TriggerZone, SpawnLocations);
-    }
-}

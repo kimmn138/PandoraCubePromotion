@@ -2,25 +2,26 @@
 
 
 #include "AI/PCAISpawnLocation.h"
-#include "Components/BillboardComponent.h"
 
 // Sets default values
 APCAISpawnLocation::APCAISpawnLocation()
 {
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
 
-    BillboardComponent = CreateDefaultSubobject<UBillboardComponent>(TEXT("Billboard"));
-    BillboardComponent->SetupAttachment(RootComponent);
-    BillboardComponent->bHiddenInGame = true;
 }
 
-FVector APCAISpawnLocation::GetSpawnLocation() const
-{
-    return GetActorLocation();
-}
-
+// Called when the game starts or when spawned
 void APCAISpawnLocation::BeginPlay()
 {
-    Super::BeginPlay();
+	Super::BeginPlay();
+	
+}
+
+// Called every frame
+void APCAISpawnLocation::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
 }
 
