@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Character/PCCommonZombieCharacter.h"
 #include "PCSpawnManager.generated.h"
 
 UCLASS()
@@ -12,15 +13,21 @@ class PANDORACUBE_API APCSpawnManager : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	APCSpawnManager();
+	static APCSpawnManager* GetInstance(UWorld* World);
+
+    void ActivateSpawnLocations(const TArray<AActor*>& NewSpawnLocations);
+    
+    void SpawnZombiesInWave();
+
+    void RegisterSpawnLocationsForTriggerZone(AActor* TriggerZone, const TArray<AActor*>& SpawnLocations);
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    TArray<AActor*> ActiveSpawnLocations;
+    TMap<AActor*, TArray<AActor*>> TriggerZoneToSpawnLocationsMap;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    UPROPERTY(EditAnywhere, Category = "Spawn")
+    TSubclassOf<class APCCommonZombieCharacter> ZombieClass;
 
+private:
+    static APCSpawnManager* Instance;
 };
