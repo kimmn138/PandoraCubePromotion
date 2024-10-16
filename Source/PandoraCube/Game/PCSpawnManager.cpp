@@ -11,7 +11,16 @@ APCSpawnManager* APCSpawnManager::GetInstance(UWorld* World)
 {
     if (!Instance)
     {
-        Instance = World->SpawnActor<APCSpawnManager>();
+        TArray<AActor*> FoundActors;
+        UGameplayStatics::GetAllActorsOfClass(World, APCSpawnManager::StaticClass(), FoundActors);
+        if (FoundActors.Num() > 0)
+        {
+            Instance = Cast<APCSpawnManager>(FoundActors[0]);
+        }
+        else
+        {
+            Instance = World->SpawnActor<APCSpawnManager>();
+        }
     }
     return Instance;
 }
@@ -40,5 +49,26 @@ void APCSpawnManager::RegisterSpawnLocationsForTriggerZone(AActor* TriggerZone, 
     if (TriggerZone)
     {
         TriggerZoneToSpawnLocationsMap.Add(TriggerZone, SpawnLocations);
+    }
+}
+
+int32 APCSpawnManager::GetSpawnCountBasedOnDifficulty(FString Difficulty)
+{
+    if (Difficulty == "Easy")
+    {
+        return SpawnData.EasySpawnCount;
+    }
+    else if (Difficulty == "Medium")
+    {
+        return SpawnData.MediumSpawnCount;
+    }
+    else if (Difficulty == "Hard")
+    {
+        return SpawnData.HardSpawnCount;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Unknown Difficulty Level: %s"), *Difficulty);
+        return 0;
     }
 }

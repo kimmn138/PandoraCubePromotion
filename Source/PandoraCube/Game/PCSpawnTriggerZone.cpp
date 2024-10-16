@@ -19,15 +19,24 @@ void APCSpawnTriggerZone::BeginPlay()
 {
     Super::BeginPlay();
 
+    if (!SpawnManager)
+    {
+        SpawnManager = APCSpawnManager::GetInstance(GetWorld());
+    }
+
     if (SpawnManager)
     {
         SpawnManager->RegisterSpawnLocationsForTriggerZone(this, LinkedSpawnLocations);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("SpawnManager not found for Trigger Zone"));
     }
 }
 
 void APCSpawnTriggerZone::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (OtherActor->IsA(APCPlayerCharacter::StaticClass()))
+    if (APCPlayerCharacter* Player = Cast<APCPlayerCharacter>(OtherActor))
     {
         if (SpawnManager)
         {
