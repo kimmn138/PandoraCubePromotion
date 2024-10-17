@@ -49,7 +49,7 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
     FSpawnData SpawnData;
 
-    FString CurrentDifficulty;
+    FString CurrentDifficulty = TEXT("Easy");
 
 private:
     static APCSpawnManager* Instance;

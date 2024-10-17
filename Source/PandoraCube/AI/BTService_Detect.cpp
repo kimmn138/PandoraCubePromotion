@@ -9,6 +9,7 @@
 #include "Physics/PCCollision.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/OverlapResult.h"
+#include "Kismet/GameplayStatics.h"
 
 UBTService_Detect::UBTService_Detect()
 {
@@ -24,6 +25,23 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	if (nullptr == ControllingPawn)
 	{
 		return;
+	}
+
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	if (BlackboardComp)
+	{
+		bool bImmediateChase = BlackboardComp->GetValueAsBool(BBKEY_IMMEDIATE);
+
+		if (bImmediateChase)
+		{
+			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(ControllingPawn->GetWorld(), 0);
+			if (PlayerPawn)
+			{
+				BlackboardComp->SetValueAsObject(BBKEY_TARGET, PlayerPawn);
+				BlackboardComp->SetValueAsBool(BBKEY_CHASING, true);
+				return;
+			}
+		}
 	}
 
 	FVector Center = ControllingPawn->GetActorLocation();
@@ -61,10 +79,6 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 			{
 				OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, Pawn);
 				OwnerComp.GetBlackboardComponent()->SetValueAsBool(BBKEY_CHASING, true);
-				DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Green, false, 0.2f);
-
-				DrawDebugPoint(World, Pawn->GetActorLocation(), 10.0f, FColor::Green, false, 0.2f);
-				DrawDebugLine(World, ControllingPawn->GetActorLocation(), Pawn->GetActorLocation(), FColor::Green, false, 0.27f);
 				return;
 			}
 		}
@@ -72,5 +86,4 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	OwnerComp.GetBlackboardComponent()->SetValueAsObject(BBKEY_TARGET, nullptr);
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(BBKEY_CHASING, false);
-	DrawDebugSphere(World, Center, DetectRadius, 16, FColor::Red, false, 0.2f);
 }

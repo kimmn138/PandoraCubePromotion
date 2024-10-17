@@ -10,6 +10,10 @@
 #include "Engine/DamageEvents.h"
 #include "CharacterStat/PCCharacterStatComponent.h"
 #include "AI/PCAIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "AI/PCAI.h"
+#include "PCPlayerCharacter.h"
+#include "Physics/PCCollision.h"
 
 // Sets default values
 APCEnemyCharacterBase::APCEnemyCharacterBase()
@@ -19,7 +23,9 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	bUseControllerRotationRoll = false;
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_PCCAPSULE);
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
@@ -28,6 +34,8 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	GetCharacterMovement()->MaxWalkSpeed = CurrentStats.Speed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->GravityScale = 5.0f; 
+	GetCharacterMovement()->bMaintainHorizontalGroundVelocity = true;
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
@@ -64,6 +72,23 @@ void APCEnemyCharacterBase::TakeKnockBack(const FVector& HitLocation, const FVec
 
 	UE_LOG(LogTemp, Warning, TEXT("KnockBack!!"));
 	LaunchCharacter(KnockbackForce, true, false);
+}
+
+void APCEnemyCharacterBase::SetImmediateChase(bool bChase)
+{
+	bImmediateChase = bChase;
+	if (bChase)
+	{
+		AAIController* AIController = Cast<AAIController>(GetController());
+		if (AIController)
+		{
+			UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+			if (BlackboardComp)
+			{
+				BlackboardComp->SetValueAsBool(BBKEY_IMMEDIATE, true);
+			}
+		}
+	}
 }
 
 void APCEnemyCharacterBase::Attack()
@@ -157,20 +182,30 @@ void APCEnemyCharacterBase::AttackHitCheck()
 	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_PCACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
 	if (HitDetected)
 	{
-		FDamageEvent DamageEvent;
-		OutHitResult.GetActor()->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-		HasNextComboCommand = true;
+		AActor* HitActor = OutHitResult.GetActor();
+		if (HitActor && HitActor->IsA(APCPlayerCharacter::StaticClass()))
+		{
+			FDamageEvent DamageEvent;
+			HitActor->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
+
+			HasNextComboCommand = true;
+		}
+		else
+		{
+			// 플레이어가 아닌 경우 공격을 무시
+			UE_LOG(LogTemp, Warning, TEXT("AttackHitCheck: Target is not a player, ignoring attack"));
+		}
 	}
 
-//#if ENABLE_DRAW_DEBUG
-//
-//	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
-//	float CapsuleHalfHeight = AttackRange * 0.5f;
-//	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
-//
-//	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
-//
-//#endif
+#if ENABLE_DRAW_DEBUG
+
+	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	float CapsuleHalfHeight = AttackRange * 0.5f;
+	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
+
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRadius, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 5.0f);
+
+#endif
 }
 
 float APCEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

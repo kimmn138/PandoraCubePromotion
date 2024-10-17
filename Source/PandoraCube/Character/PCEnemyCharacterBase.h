@@ -23,6 +23,11 @@ public:
 
 	void TakeKnockBack(const FVector& HitLocation, const FVector& ImpactDirection, float Force);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior")
+	bool bImmediateChase;
+
+	void SetImmediateChase(bool bChase);
+
 protected:
 	void Attack();
 
