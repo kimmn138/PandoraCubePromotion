@@ -7,13 +7,20 @@
 #include "ItemTypes.generated.h"
 
 UENUM(BlueprintType)
-enum class EItemType : uint8
+enum class EWeaponType : uint8
 {
     IT_Rifle  UMETA(DisplayName = "Rifle"),
     IT_Pistol UMETA(DisplayName = "Pistol"),
     IT_Shotgun UMETA(DisplayName = "Shotgun"),
     IT_Sniper UMETA(DisplayName = "Sniper"),
     IT_SMG UMETA(DisplayName = "SMG")
+};
+
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+    Primary  UMETA(DisplayName = "Primary"),
+    Secondary UMETA(DisplayName = "Secondary")
 };
 
 USTRUCT(BlueprintType)
@@ -64,7 +71,10 @@ struct FInventoryItem : public FTableRowBase
     UTexture2D* Icon;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    EItemType Type;
+    EWeaponType Type;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    EItemType ItemType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     TSubclassOf<APCWeaponBase> WeaponClass;
@@ -95,4 +105,7 @@ struct FDynamicInventoryItem : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
     int32 Scope;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
+    EItemType ItemType;
 };

@@ -266,7 +266,9 @@ protected:
 
 	TSubclassOf<class APCPickUpBase> CurrentWeaponPickupClass;
 
-	EItemType WeaponType;
+	EWeaponType WeaponType;
+
+	EItemType ItemType;
 
 // Animation Section
 protected:

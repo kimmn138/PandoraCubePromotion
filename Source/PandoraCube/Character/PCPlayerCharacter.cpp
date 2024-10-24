@@ -516,7 +516,7 @@ void APCPlayerCharacter::Fire()
 {
 	switch (WeaponType)
 	{
-		case EItemType::IT_Rifle:
+		case EWeaponType::IT_Rifle:
 			if (bIsAttacking && bCanFire)
 			{
 				if (BulletsLeft())
@@ -554,7 +554,7 @@ void APCPlayerCharacter::Fire()
 			}
 			break;
 
-		case EItemType::IT_Pistol:
+		case EWeaponType::IT_Pistol:
 			if (bIsAttacking && bCanFire && !bCooling)
 			{
 				if (BulletsLeft())
@@ -589,7 +589,7 @@ void APCPlayerCharacter::Fire()
 			}
 			break;
 
-		case EItemType::IT_Shotgun:
+		case EWeaponType::IT_Shotgun:
 			if (bIsAttacking && bCanFire && !bCooling)
 			{
 				if (BulletsLeft())
@@ -624,7 +624,7 @@ void APCPlayerCharacter::Fire()
 			}
 			break;
 
-		case EItemType::IT_SMG:
+		case EWeaponType::IT_SMG:
 			if (bIsAttacking && bCanFire)
 			{
 				if (BulletsLeft())
@@ -698,14 +698,20 @@ void APCPlayerCharacter::StopAiming()
 
 void APCPlayerCharacter::ChangeInven1()
 {
-	CurrentItemSelection = 0;
-	EquipItem();
+	if (InventoryComponent->Inventory[0].ID != -1)
+	{
+		CurrentItemSelection = 0;
+		EquipItem();
+	}
 }
 
 void APCPlayerCharacter::ChangeInven2()
 {
-	CurrentItemSelection = 1;
-	EquipItem();
+	if (InventoryComponent->Inventory[1].ID != -1)
+	{
+		CurrentItemSelection = 1;
+		EquipItem();
+	}
 }
 
 void APCPlayerCharacter::Reload()
@@ -744,9 +750,22 @@ void APCPlayerCharacter::DropItem()
 			if (SpawnedPickup)
 			{
 				SpawnedPickup->Item = InventoryComponent->Inventory[CurrentItemSelection];
-				InventoryComponent->Inventory.RemoveAt(CurrentItemSelection);
-				CurrentItemSelection = 0;
-				EquipItem();
+				InventoryComponent->Inventory[CurrentItemSelection] = FDynamicInventoryItem();
+				InventoryComponent->Inventory[CurrentItemSelection].ID = -1;
+				if (CurrentItemSelection == 0 && InventoryComponent->Inventory[1].ID != -1)
+				{
+					CurrentItemSelection = 1;
+					EquipItem();
+				}
+				else if (CurrentItemSelection == 1 && InventoryComponent->Inventory[0].ID != -1)
+				{
+					CurrentItemSelection = 0;
+					EquipItem();
+				}
+				else
+				{
+					CurrentAnimState = EAnimState::Hands;
+				}
 			}
 		}
 	}
@@ -1150,43 +1169,56 @@ void APCPlayerCharacter::EquipItem()
 		{
 			int32 SelectedItem = InventoryComponent->Inventory[CurrentItemSelection].ID;
 
-			FName RowName = FName(*FString::FromInt(SelectedItem));
-			FString ContextString = TEXT("Item Data Context");
-
-			if (ItemDataTable)
+			if (SelectedItem != -1)
 			{
-				FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
+				FName RowName = FName(*FString::FromInt(SelectedItem));
+				FString ContextString = TEXT("Item Data Context");
 
-				if (Row)
+				if (ItemDataTable)
 				{
-					WeaponClass = Row->WeaponClass;
+					FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
 
-					if (WeaponClass)
+					if (Row)
 					{
-						if (EquippedWeapon != nullptr)
+						WeaponClass = Row->WeaponClass;
+
+						if (WeaponClass)
 						{
-							EquippedWeapon->Destroy();
-							EquippedWeapon = nullptr;
-						}
+							if (EquippedWeapon != nullptr)
+							{
+								EquippedWeapon->Destroy();
+								EquippedWeapon = nullptr;
+							}
 
-						EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
+							EquippedWeapon = GetWorld()->SpawnActor<APCWeaponBase>(WeaponClass);
 
-						if (EquippedWeapon)
-						{
-							FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-							EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
+							if (EquippedWeapon)
+							{
+								FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+								EquippedWeapon->AttachToComponent(GetMesh(), AttachmentRules, TEXT("WeaponSocket"));
 
-							EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
-							EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
+								EquippedWeapon->SetActorRelativeLocation(FVector(-9.0f, 0.0f, -0.2f));
+								EquippedWeapon->SetActorRelativeRotation(FRotator(16.5f, 93.5999f, 357.2f));
 
-							CurrentAnimState = Row->AnimState;
-							CurrentStats = Row->Stats;
-							CurrentReloadAnimation = Row->ReloadAnimation;
-							CurrentWeaponPickupClass = Row->PickupClass;
-							WeaponType = Row->Type;
+								CurrentAnimState = Row->AnimState;
+								CurrentStats = Row->Stats;
+								CurrentReloadAnimation = Row->ReloadAnimation;
+								CurrentWeaponPickupClass = Row->PickupClass;
+								WeaponType = Row->Type;
+								ItemType = Row->ItemType;
+							}
 						}
 					}
 				}
+			}
+			else
+			{
+				if (EquippedWeapon != nullptr)
+				{
+					EquippedWeapon->Destroy();
+					EquippedWeapon = nullptr;
+				}
+				CurrentAnimState = EAnimState::Hands;
 			}
 		}
 		else
@@ -1196,7 +1228,6 @@ void APCPlayerCharacter::EquipItem()
 				EquippedWeapon->Destroy();
 				EquippedWeapon = nullptr;
 			}
-
 			CurrentAnimState = EAnimState::Hands;
 		}
 	}
@@ -1207,16 +1238,42 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 {
 	if (IsLocallyControlled())
 	{
-		if (InventoryComponent->Inventory.Num() >= InventoryComponent->MaxItemCount)
-		{
+		FName RowName = FName(*FString::FromInt(Item.ID));
+		FString ContextString = TEXT("Item Data Context");
 
-		}
-		else
+		if (ItemDataTable)
 		{
-			InventoryComponent->Inventory.Add(Item);
-			PickUp->Destroy();
-			CurrentItemSelection = 0;
-			EquipItem();
+			FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
+			if (Row->ItemType == EItemType::Primary)
+			{
+				if (InventoryComponent->Inventory.IsValidIndex(0) || InventoryComponent->Inventory[0].ID == -1)
+				{
+					InventoryComponent->Inventory.Insert(Item, 0);
+					PickUp->Destroy();
+					CurrentItemSelection = 0;
+					EquipItem();
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Primary weapon slots are full."));
+					return;
+				}
+			}
+			else if (Row->ItemType == EItemType::Secondary)
+			{
+				if (InventoryComponent->Inventory.IsValidIndex(1) || InventoryComponent->Inventory[1].ID == -1)
+				{
+					InventoryComponent->Inventory.Insert(Item, 1);
+					PickUp->Destroy();
+					CurrentItemSelection = 1;
+					EquipItem();
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Secondary weapon slot is full."));
+					return;
+				}
+			}
 		}
 	}
 }

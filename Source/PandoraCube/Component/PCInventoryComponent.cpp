@@ -14,36 +14,14 @@ UPCInventoryComponent::UPCInventoryComponent()
 	NewItem.ID = 4;
 	NewItem.Bullets = 8;
 	NewItem.Scope = 0;
-
-	Inventory.Add(NewItem);
-
-	NewItem.ID = 1;
-	NewItem.Bullets = 30;
-	NewItem.Scope = 0;
-
-	Inventory.Add(NewItem);
-
-	NewItem.ID = 5;
-	NewItem.Bullets = 30;
-	NewItem.Scope = 0;
-
-	Inventory.Add(NewItem);
-
-	NewItem.ID = 6;
-	NewItem.Bullets = 5;
-	NewItem.Scope = 0;
-
-	Inventory.Add(NewItem);
-
-	NewItem.ID = 2;
-	NewItem.Bullets = 30;
-	NewItem.Scope = 0;
+	NewItem.ItemType = EItemType::Primary;
 
 	Inventory.Add(NewItem);
 
 	NewItem.ID = 3;
-	NewItem.Bullets = 8;
+	NewItem.Bullets = 30;
 	NewItem.Scope = 0;
+	NewItem.ItemType = EItemType::Secondary;
 
 	Inventory.Add(NewItem);
 }
