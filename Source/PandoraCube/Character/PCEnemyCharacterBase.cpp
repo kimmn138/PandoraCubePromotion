@@ -93,11 +93,16 @@ void APCEnemyCharacterBase::SetImmediateChase(bool bChase)
 
 void APCEnemyCharacterBase::Attack()
 {
-	ProcessComboCommand();
+	if (!bIsDead)
+	{
+		ProcessComboCommand();
+	}
 }
 
 void APCEnemyCharacterBase::ProcessComboCommand()
 {
+	if (bIsDead) return;
+
 	if (CurrentCombo == 0)
 	{
 		ComboActionBegin();
@@ -116,6 +121,8 @@ void APCEnemyCharacterBase::ProcessComboCommand()
 
 void APCEnemyCharacterBase::ComboActionBegin()
 {
+	if (bIsDead) return;
+
 	CurrentCombo = 1;
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
@@ -134,6 +141,8 @@ void APCEnemyCharacterBase::ComboActionBegin()
 
 void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsProperlyEnded)
 {
+	if (bIsDead) return;
+
 	ensure(CurrentCombo != 0);
 	CurrentCombo = 0;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
@@ -143,9 +152,11 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 
 void APCEnemyCharacterBase::SetComboCheckTimer()
 {
+	if (bIsDead) return;
+
 	int32 ComboIndex = CurrentCombo - 1;
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
-	const float AttackSpeedRate = 1.0f;
+	const float AttackSpeedRate = CurrentStats.AttackRate;
 	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
 	if (ComboEffectiveTime > 0.0f)
 	{
@@ -155,6 +166,8 @@ void APCEnemyCharacterBase::SetComboCheckTimer()
 
 void APCEnemyCharacterBase::ComboCheck()
 {
+	if (bIsDead) return;
+
 	ComboTimerHandle.Invalidate();
 	if (HasNextComboCommand)
 	{
@@ -170,6 +183,8 @@ void APCEnemyCharacterBase::ComboCheck()
 
 void APCEnemyCharacterBase::AttackHitCheck()
 {
+	if (bIsDead) return;
+
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
 
@@ -192,7 +207,6 @@ void APCEnemyCharacterBase::AttackHitCheck()
 		}
 		else
 		{
-			// 플레이어가 아닌 경우 공격을 무시
 			UE_LOG(LogTemp, Warning, TEXT("AttackHitCheck: Target is not a player, ignoring attack"));
 		}
 	}
@@ -212,7 +226,10 @@ float APCEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& 
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	PlayHitAnimation();
+	if (!bIsDead)
+	{
+		PlayHitAnimation();
+	}
 	Stat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;
@@ -220,6 +237,7 @@ float APCEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& 
 
 void APCEnemyCharacterBase::SetDead()
 {
+	bIsDead = true;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);

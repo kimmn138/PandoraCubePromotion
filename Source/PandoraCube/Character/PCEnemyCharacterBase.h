@@ -47,6 +47,7 @@ protected:
 	int32 CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
 	bool HasNextComboCommand = false;
+	bool bIsDead = false;
 
 protected:
 	virtual void AttackHitCheck() override;
@@ -63,7 +64,7 @@ protected:
 	void PlayDeadAnimation();
 	void PlayHitAnimation();
 
-	float DeadEventDelayTime = 5.0f;
+	float DeadEventDelayTime = 4.0f;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
