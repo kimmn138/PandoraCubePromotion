@@ -6,24 +6,10 @@
 // Sets default values for this component's properties
 UPCInventoryComponent::UPCInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	Inventory.SetNum(2);
 
-	FDynamicInventoryItem NewItem;
-	NewItem.ID = 4;
-	NewItem.Bullets = 8;
-	NewItem.Scope = 0;
-	NewItem.ItemType = EItemType::Primary;
-
-	Inventory.Add(NewItem);
-
-	NewItem.ID = 3;
-	NewItem.Bullets = 30;
-	NewItem.Scope = 0;
-	NewItem.ItemType = EItemType::Secondary;
-
-	Inventory.Add(NewItem);
+	MaxAmmo = 0;
+	CurrentAmmo = MaxAmmo;
 }
 
 // Called when the game starts
@@ -31,16 +17,24 @@ void UPCInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	SetAmmo(MaxAmmo);
 	
 }
 
-
-// Called every frame
-void UPCInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+int32 UPCInventoryComponent::ApplyAmmo(int32 InAmmo)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	const int32 PrevAmmo = CurrentAmmo;
+	const int32 ActualAmmo = FMath::Clamp<int32>(InAmmo, 0, InAmmo);
 
-	// ...
+	SetAmmo(PrevAmmo - ActualAmmo);
+
+	return ActualAmmo;
+}
+
+void UPCInventoryComponent::SetAmmo(int32 NewAmmo)
+{
+	CurrentAmmo = FMath::Clamp<int32>(NewAmmo, 0.0f, MaxAmmo);
+
+	OnCurrentAmmoChanged.Broadcast(CurrentAmmo);
 }
 

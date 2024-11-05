@@ -242,6 +242,12 @@ void APCEnemyCharacterBase::SetDead()
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
 
+	APCAIController* AIController = Cast<APCAIController>(GetController());
+	if (AIController)
+	{
+		AIController->BrainComponent->StopLogic(TEXT("Character is Dead"));
+	}
+
 	FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
 		[&]()
@@ -275,7 +281,7 @@ float APCEnemyCharacterBase::GetAIPatrolRadius()
 
 float APCEnemyCharacterBase::GetAIDetectRange()
 {
-	return 1000.0f;
+	return 2500.0f;
 }
 
 float APCEnemyCharacterBase::GetAIAttackRange()

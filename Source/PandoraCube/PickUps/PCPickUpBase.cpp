@@ -24,6 +24,12 @@ APCPickUpBase::APCPickUpBase()
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
 	GunMesh->SetRelativeRotation(FRotator(90.f, -90.f, 0.f));
 	GunMesh->SetupAttachment(BoxCollision);
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableRef(TEXT("/Script/Engine.DataTable'/Game/PandoraCube/ItemData/ItemDataTable.ItemDataTable'"));
+	if (nullptr != ItemDataTableRef.Object)
+	{
+		ItemDataTable = ItemDataTableRef.Object;
+	}
 }
 
 // Called when the game starts or when spawned

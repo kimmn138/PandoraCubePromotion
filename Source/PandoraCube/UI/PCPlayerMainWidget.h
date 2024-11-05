@@ -24,6 +24,10 @@ public:
 	FORCEINLINE void SetMaxHp(float NewMaxHp) { MaxHp = NewMaxHp; }
 	void UpdateHpText(float NewCurrentHp);
 
+	FORCEINLINE void SetMaxAmmo(float NewMaxAmmo) { MaxAmmo = NewMaxAmmo; }
+	void UpdateCurrentAmmoText(float NewCurrentAmmo);
+	void UpdateMaxAmmoText(float NewMaxAmmo);
+
 protected:
 	UPROPERTY()
 	TObjectPtr<class UTextBlock> HpText;
@@ -33,4 +37,16 @@ protected:
 
 	UPROPERTY()
 	float MaxHp;
+
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> CurrentAmmoTextInt;
+
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> MaxAmmoTextInt;
+
+	UPROPERTY()
+	int32 MaxAmmo;
+
+	UPROPERTY()
+	int32 CurrentAmmo;
 };

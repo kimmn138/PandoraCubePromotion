@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Item/ItemTypes.h"
+#include "Engine/DataTable.h"
 #include "PCPickUpBase.generated.h"
 
 UCLASS()
@@ -35,4 +36,7 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Inventory", meta = (ExposeOnSpawn = true))
 	FDynamicInventoryItem Item;
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UDataTable> ItemDataTable;
 };

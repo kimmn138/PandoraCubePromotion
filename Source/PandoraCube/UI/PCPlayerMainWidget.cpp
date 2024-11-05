@@ -8,6 +8,8 @@
 UPCPlayerMainWidget::UPCPlayerMainWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	MaxHp = -1.0f;
+	MaxAmmo = 0;
+	CurrentAmmo = 0;
 }
 
 void UPCPlayerMainWidget::NativeConstruct()
@@ -20,6 +22,11 @@ void UPCPlayerMainWidget::NativeConstruct()
 	HpText = Cast<UTextBlock>(GetWidgetFromName(TEXT("HpText")));
 	ensure(HpText);
 
+	CurrentAmmoTextInt = Cast<UTextBlock>(GetWidgetFromName(TEXT("CurrentAmmo")));
+	ensure(CurrentAmmoTextInt);
+
+	MaxAmmoTextInt = Cast<UTextBlock>(GetWidgetFromName(TEXT("MaxAmmo")));
+	ensure(MaxAmmoTextInt);
 }
 
 void UPCPlayerMainWidget::UpdateHpText(float NewCurrentHp)
@@ -47,5 +54,29 @@ void UPCPlayerMainWidget::UpdateHpText(float NewCurrentHp)
 			HpInt->SetColorAndOpacity(FSlateColor(FLinearColor(0.0f, 1.0f, 0.0f, 1.0f)));
 			HpText->SetColorAndOpacity(FSlateColor(FLinearColor(0.0f, 1.0f, 0.0f, 1.0f)));
 		}
+	}
+}
+
+void UPCPlayerMainWidget::UpdateCurrentAmmoText(float NewCurrentAmmo)
+{
+	ensure(CurrentAmmo > 0.0f);
+	if (CurrentAmmoTextInt)
+	{
+		int32 CurrentAmmoInt = static_cast<int32>(NewCurrentAmmo);
+		FText CurrentAmmoTextValue = FText::AsNumber(CurrentAmmoInt);
+
+		CurrentAmmoTextInt->SetText(CurrentAmmoTextValue);
+	}
+}
+
+void UPCPlayerMainWidget::UpdateMaxAmmoText(float NewMaxAmmo)
+{
+	ensure(MaxAmmo > 0.0f);
+	if (MaxAmmoTextInt)
+	{
+		int32 MaxAmmoInt = static_cast<int32>(NewMaxAmmo);
+		FText MaxAmmoTextValue = FText::AsNumber(MaxAmmoInt);
+
+		MaxAmmoTextInt->SetText(MaxAmmoTextValue);
 	}
 }

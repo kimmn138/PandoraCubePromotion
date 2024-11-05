@@ -12,7 +12,7 @@ enum class EWeaponType : uint8
     IT_Rifle  UMETA(DisplayName = "Rifle"),
     IT_Pistol UMETA(DisplayName = "Pistol"),
     IT_Shotgun UMETA(DisplayName = "Shotgun"),
-    IT_Sniper UMETA(DisplayName = "Sniper"),
+    IT_Hand UMETA(DisplayName = "Hand"),
     IT_SMG UMETA(DisplayName = "SMG")
 };
 
@@ -98,10 +98,13 @@ struct FDynamicInventoryItem : public FTableRowBase
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
-    int32 ID;
+    int32 ID = -1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
-    int32 Bullets;
+    int32 CurrentBullets;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
+    int32 TotalBullets;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
     int32 Scope;

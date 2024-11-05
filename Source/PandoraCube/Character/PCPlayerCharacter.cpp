@@ -424,14 +424,15 @@ FTransform APCPlayerCharacter::GetLeftHandSocketTransform_Implementation() const
 
 void APCPlayerCharacter::ReduceBullet()
 {
-	InventoryComponent->Inventory[CurrentItemSelection].Bullets -= 1;
+	InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets -= 1;
+	InventoryComponent->SetCurrentAmmo(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
 }
 
 bool APCPlayerCharacter::BulletsLeft()
 {
 	if (InventoryComponent->Inventory.IsValidIndex(CurrentItemSelection))
 	{
-		if (InventoryComponent->Inventory[CurrentItemSelection].Bullets >= 1)
+		if (InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets >= 1)
 		{
 			return true;
 		}
@@ -521,7 +522,7 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
 					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShootRay();
@@ -559,7 +560,7 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
 					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShootRay();
@@ -594,7 +595,7 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
 					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShotgunShootRay();
@@ -629,7 +630,7 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].Bullets);
+					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
 					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShootRay();
@@ -660,6 +661,9 @@ void APCPlayerCharacter::Fire()
 					);
 				}
 			}
+			break;
+
+		case EWeaponType::IT_Hand:
 			break;
 
 		default:
@@ -716,7 +720,7 @@ void APCPlayerCharacter::ChangeInven2()
 
 void APCPlayerCharacter::Reload()
 {
-	if (InventoryComponent->Inventory[CurrentItemSelection].Bullets < CurrentStats.MagSize)
+	if (InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets < CurrentStats.MagSize && InventoryComponent->Inventory[CurrentItemSelection].TotalBullets > 0)
 	{
 		if (bIsAiming)
 		{
@@ -731,6 +735,7 @@ void APCPlayerCharacter::Reload()
 
 		FTimerHandle ReloadTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &APCPlayerCharacter::CompleteReload, CurrentStats.ReloadTime, false);
+
 	}
 }
 
@@ -752,6 +757,7 @@ void APCPlayerCharacter::DropItem()
 				SpawnedPickup->Item = InventoryComponent->Inventory[CurrentItemSelection];
 				InventoryComponent->Inventory[CurrentItemSelection] = FDynamicInventoryItem();
 				InventoryComponent->Inventory[CurrentItemSelection].ID = -1;
+				EquippedWeapon->Destroy();
 				if (CurrentItemSelection == 0 && InventoryComponent->Inventory[1].ID != -1)
 				{
 					CurrentItemSelection = 1;
@@ -765,6 +771,9 @@ void APCPlayerCharacter::DropItem()
 				else
 				{
 					CurrentAnimState = EAnimState::Hands;
+					InventoryComponent->SetCurrentAmmo(0);
+					InventoryComponent->SetMaxAmmo(0);
+					WeaponType = EWeaponType::IT_Hand;
 				}
 			}
 		}
@@ -795,8 +804,17 @@ void APCPlayerCharacter::CompleteReload()
 {
 	bCanAim = 1;
 	bCanFire = 1;
-	InventoryComponent->Inventory[CurrentItemSelection].Bullets = CurrentStats.MagSize;
 	bStopLeftHandIK = 0;
+
+	int32 AmmoNeeded = CurrentStats.MagSize - InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets;
+	int32 AmmoToReload = FMath::Min(AmmoNeeded, InventoryComponent->Inventory[CurrentItemSelection].TotalBullets);
+
+	InventoryComponent->SetMaxAmmo(InventoryComponent->Inventory[CurrentItemSelection].TotalBullets - AmmoToReload);
+
+	InventoryComponent->SetCurrentAmmo(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets + AmmoToReload);
+
+	InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets = InventoryComponent->GetCurrentAmmo();
+	InventoryComponent->Inventory[CurrentItemSelection].TotalBullets = InventoryComponent->GetMaxAmmo();
 }
 
 void APCPlayerCharacter::CheckWallTick()
@@ -892,7 +910,6 @@ void APCPlayerCharacter::ShootRay()
 
 						if (HitResult.BoneName == "jaw_01")
 						{
-							UE_LOG(LogTemp, Warning, TEXT("Blocked"));
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
 							UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
 							AActor* NewMetalBulletHole = GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
@@ -901,7 +918,6 @@ void APCPlayerCharacter::ShootRay()
 						}
 						else if (HitResult.BoneName == "head")
 						{
-							UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
 							UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 							bParticleSpawned = true;
@@ -910,7 +926,6 @@ void APCPlayerCharacter::ShootRay()
 						}
 						else
 						{
-							UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
 							UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 							bParticleSpawned = true;
@@ -1032,7 +1047,6 @@ void APCPlayerCharacter::ShotgunShootRay()
 
 							if (HitResult.BoneName == "jaw_01")
 							{
-								UE_LOG(LogTemp, Warning, TEXT("Blocked"));
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
 								UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
 								GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
@@ -1041,7 +1055,6 @@ void APCPlayerCharacter::ShotgunShootRay()
 							}
 							else if (HitResult.BoneName == "head")
 							{
-								UE_LOG(LogTemp, Warning, TEXT("HeadShot"));
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
 								UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 								bParticleSpawned = true;
@@ -1050,7 +1063,6 @@ void APCPlayerCharacter::ShotgunShootRay()
 							}
 							else
 							{
-								UE_LOG(LogTemp, Warning, TEXT("BodyShot"));
 								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
 								UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 								bParticleSpawned = true;
@@ -1158,6 +1170,10 @@ void APCPlayerCharacter::SetupCharacterWidget()
 		PlayerMainWidget->SetMaxHp(Stat->GetMaxHp());
 		PlayerMainWidget->UpdateHpText(Stat->GetCurrentHp());
 		Stat->OnHpChanged.AddUObject(PlayerMainWidget, &UPCPlayerMainWidget::UpdateHpText);
+		PlayerMainWidget->SetMaxAmmo(InventoryComponent->GetMaxAmmo());
+		PlayerMainWidget->UpdateCurrentAmmoText(InventoryComponent->GetCurrentAmmo());
+		InventoryComponent->OnCurrentAmmoChanged.AddUObject(PlayerMainWidget, &UPCPlayerMainWidget::UpdateCurrentAmmoText);
+		InventoryComponent->OnMaxAmmoChanged.AddUObject(PlayerMainWidget, &UPCPlayerMainWidget::UpdateMaxAmmoText);
 	}
 }
 
@@ -1206,6 +1222,9 @@ void APCPlayerCharacter::EquipItem()
 								CurrentWeaponPickupClass = Row->PickupClass;
 								WeaponType = Row->Type;
 								ItemType = Row->ItemType;
+
+								InventoryComponent->SetMaxAmmo(InventoryComponent->Inventory[CurrentItemSelection].TotalBullets);
+								InventoryComponent->SetCurrentAmmo(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
 							}
 						}
 					}
@@ -1244,39 +1263,45 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 		if (ItemDataTable)
 		{
 			FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
-			if (Row->ItemType == EItemType::Primary)
+			if (Row) 
 			{
-				if (InventoryComponent->Inventory.IsValidIndex(0) || InventoryComponent->Inventory[0].ID == -1)
+				if (Row->ItemType == EItemType::Primary)
 				{
-					InventoryComponent->Inventory.Insert(Item, 0);
-					PickUp->Destroy();
-					CurrentItemSelection = 0;
-					EquipItem();
+					if (InventoryComponent->Inventory[0].ID == -1)
+					{
+						InventoryComponent->Inventory.Insert(Item, 0);
+						PickUp->Destroy();
+						CurrentItemSelection = 0;
+						EquipItem();
+					}
+					else
+					{
+						return;
+					}
 				}
-				else
+				else if (Row->ItemType == EItemType::Secondary)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Primary weapon slots are full."));
-					return;
+					if (InventoryComponent->Inventory[1].ID == -1)
+					{
+						InventoryComponent->Inventory.Insert(Item, 1);
+						PickUp->Destroy();
+						CurrentItemSelection = 1;
+						EquipItem();
+					}
+					else
+					{
+						return;
+					}
 				}
 			}
-			else if (Row->ItemType == EItemType::Secondary)
+			else
 			{
-				if (InventoryComponent->Inventory.IsValidIndex(1) || InventoryComponent->Inventory[1].ID == -1)
-				{
-					InventoryComponent->Inventory.Insert(Item, 1);
-					PickUp->Destroy();
-					CurrentItemSelection = 1;
-					EquipItem();
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Secondary weapon slot is full."));
-					return;
-				}
+				UE_LOG(LogTemp, Error, TEXT("Item not found in the data table for RowName: %s"), *RowName.ToString());
 			}
 		}
 	}
 }
+
 
 EAnimState APCPlayerCharacter::GetAnimState_Implementation() const
 {

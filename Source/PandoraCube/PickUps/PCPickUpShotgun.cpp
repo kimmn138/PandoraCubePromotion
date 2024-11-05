@@ -10,4 +10,20 @@ APCPickUpShotgun::APCPickUpShotgun()
 	{
 		GunMesh->SetSkeletalMesh(GunMeshRef.Object);
 	}
+
+	FName RowName = FName(*FString::FromInt(4));
+	FString ContextString = TEXT("Item Data Context");
+
+	if (ItemDataTable)
+	{
+		FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
+
+		if (Row)
+		{
+			Item.ID = 4;
+			Item.CurrentBullets = Row->Stats.MagSize;
+			Item.TotalBullets = Row->Stats.MagSize * 3;
+			Item.ItemType = EItemType::Primary;
+		}
+	}
 }

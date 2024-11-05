@@ -266,7 +266,7 @@ protected:
 
 	TSubclassOf<class APCPickUpBase> CurrentWeaponPickupClass;
 
-	EWeaponType WeaponType;
+	EWeaponType WeaponType = EWeaponType::IT_Hand;
 
 	EItemType ItemType;
 
