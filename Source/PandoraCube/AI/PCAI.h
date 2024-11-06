@@ -8,3 +8,4 @@
 #define BBKEY_MAXSPEED TEXT("MaxSpeed")
 #define BBKEY_CHASING TEXT("bIsChasing")
 #define BBKEY_IMMEDIATE TEXT("bImmediateChase")
+#define BBKEY_FLEEING TEXT("bIsFleeing")

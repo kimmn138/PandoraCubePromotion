@@ -82,10 +82,14 @@ public:
 	virtual FCharacterStats GetCharacterStats() const override { return CurrentStats; }
 
 protected:
+	bool bIsFleeing = false;
+
 	virtual float GetAIPatrolRadius() override;
 	virtual float GetAIDetectRange() override;
 	virtual float GetAIAttackRange() override;
 	virtual float GetAITurnSpeed() override;
+	virtual bool GetAIIsFleeing() override;
+	virtual void SetAIIsFleeing(bool NewFleeing) override;
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
 	virtual void AttackByAI() override;

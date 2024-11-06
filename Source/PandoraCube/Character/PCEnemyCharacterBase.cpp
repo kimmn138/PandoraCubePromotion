@@ -294,6 +294,16 @@ float APCEnemyCharacterBase::GetAITurnSpeed()
 	return 2.0f;
 }
 
+bool APCEnemyCharacterBase::GetAIIsFleeing()
+{
+	return bIsFleeing;
+}
+
+void APCEnemyCharacterBase::SetAIIsFleeing(bool NewFleeing)
+{
+	bIsFleeing = NewFleeing;
+}
+
 void APCEnemyCharacterBase::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)
 {
 	OnAttackFinished = InOnAttackFinished;
