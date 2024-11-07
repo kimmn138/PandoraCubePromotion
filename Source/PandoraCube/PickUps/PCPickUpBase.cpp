@@ -12,7 +12,11 @@ APCPickUpBase::APCPickUpBase()
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
 	BoxCollision->SetBoxExtent(FVector(42.95897f, 17.13143f, 3.400801f));
 	BoxCollision->SetSimulatePhysics(true);
+	BoxCollision->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	BoxCollision->SetCollisionProfileName(TEXT("PhysicsActor"));
+	BoxCollision->SetMassOverrideInKg(NAME_None, 100.0f, true); 
+	BoxCollision->SetLinearDamping(5.0f); 
+	BoxCollision->SetAngularDamping(5.0f);
 	RootComponent = BoxCollision;
 
 	BoxCollision2 = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision2"));
