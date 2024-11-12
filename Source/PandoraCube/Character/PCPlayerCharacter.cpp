@@ -686,7 +686,7 @@ void APCPlayerCharacter::Aiming()
 		{
 			AimTimeline->Play();
 		}
-		FollowCamera->SetFieldOfView(50.0f);
+		FollowCamera->SetFieldOfView(80.0f);
 	}
 }
 
@@ -1269,7 +1269,7 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 				{
 					if (InventoryComponent->Inventory[0].ID == -1)
 					{
-						InventoryComponent->Inventory.Insert(Item, 0);
+						InventoryComponent->Inventory[0] = Item;
 						PickUp->Destroy();
 						CurrentItemSelection = 0;
 						EquipItem();
@@ -1283,7 +1283,7 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 				{
 					if (InventoryComponent->Inventory[1].ID == -1)
 					{
-						InventoryComponent->Inventory.Insert(Item, 1);
+						InventoryComponent->Inventory[1] = Item;
 						PickUp->Destroy();
 						CurrentItemSelection = 1;
 						EquipItem();

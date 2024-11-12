@@ -101,10 +101,10 @@ struct FDynamicInventoryItem : public FTableRowBase
     int32 ID = -1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
-    int32 CurrentBullets;
+    int32 CurrentBullets = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
-    int32 TotalBullets;
+    int32 TotalBullets = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
     int32 Scope;
