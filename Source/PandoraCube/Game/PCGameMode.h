@@ -16,4 +16,5 @@ class PANDORACUBE_API APCGameMode : public AGameModeBase
 	
 public:
 	APCGameMode();
+
 };
