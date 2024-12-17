@@ -965,6 +965,18 @@ void APCPlayerCharacter::ShootRay()
 
 					break;
 				}
+				else if (Tag == "Bomb")
+				{
+					FDamageEvent DamageEvent;
+
+					FVector ImpactDirection = HitResult.TraceEnd - HitResult.TraceStart;
+					ImpactDirection.Normalize();
+
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+					UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
+					bParticleSpawned = true;
+					HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
+				}
 			}
 
 			if (!bParticleSpawned)
@@ -1101,6 +1113,18 @@ void APCPlayerCharacter::ShotgunShootRay()
 						}
 
 						break;
+					}
+					else if (Tag == "Bomb")
+					{
+						FDamageEvent DamageEvent;
+
+						FVector ImpactDirection = HitResult.TraceEnd - HitResult.TraceStart;
+						ImpactDirection.Normalize();
+
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+						UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
+						bParticleSpawned = true;
+						HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
 					}
 				}
 
