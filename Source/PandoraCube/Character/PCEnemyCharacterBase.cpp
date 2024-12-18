@@ -129,11 +129,15 @@ void APCEnemyCharacterBase::ComboActionBegin()
 
 	const float AttackSpeedRate = 1.0f;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
 	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
 
+	// 기존 델리게이트 해제 후 재설정
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &APCEnemyCharacterBase::ComboActionEnd);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, ComboActionMontage);
+
+	UE_LOG(LogTemp, Warning, TEXT("Montage_Play: ComboActionMontage started successfully!"));
 
 	ComboTimerHandle.Invalidate();
 	SetComboCheckTimer();
@@ -143,10 +147,22 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 {
 	if (bIsDead) return;
 
+	// TargetMontage가 nullptr인 경우 처리
+	if (TargetMontage == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ComboActionEnd: TargetMontage is NULL!"));
+		return;
+	}
+
 	ensure(CurrentCombo != 0);
 	CurrentCombo = 0;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
+	UE_LOG(LogTemp, Warning, TEXT("ComboEnd!!!! Montage: %s, IsProperlyEnded: %s"),
+		*TargetMontage->GetName(),
+		IsProperlyEnded ? TEXT("True") : TEXT("False"));
+
+	HasNextComboCommand = false;  // 콤보 상태 리셋
 	NotifyComboActionEnd();
 }
 
@@ -156,8 +172,10 @@ void APCEnemyCharacterBase::SetComboCheckTimer()
 
 	int32 ComboIndex = CurrentCombo - 1;
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
+
 	const float AttackSpeedRate = CurrentStats.AttackRate;
 	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
+
 	if (ComboEffectiveTime > 0.0f)
 	{
 		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &APCEnemyCharacterBase::ComboCheck, ComboEffectiveTime, false);
@@ -169,17 +187,34 @@ void APCEnemyCharacterBase::ComboCheck()
 	if (bIsDead) return;
 
 	ComboTimerHandle.Invalidate();
+
 	if (HasNextComboCommand)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		if (!AnimInstance || !AnimInstance->Montage_IsPlaying(ComboActionMontage))
+		{
+			UE_LOG(LogTemp, Error, TEXT("ComboCheck: ComboActionMontage is not playing!"));
+			ComboActionEnd(ComboActionMontage, false);  // TargetMontage 전달
+			return;
+		}
+
+		if (CurrentCombo >= ComboActionData->MaxComboCount)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ComboCheck: Reached last combo section, ending combo."));
+			ComboActionEnd(ComboActionMontage, true);  // 정상 종료
+			return;
+		}
 
 		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
 		FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionData->MontageSectionNamePrefix, CurrentCombo);
 		AnimInstance->Montage_JumpToSection(NextSection, ComboActionMontage);
 		SetComboCheckTimer();
+
 		HasNextComboCommand = false;
 	}
 }
+
 
 void APCEnemyCharacterBase::AttackHitCheck()
 {
@@ -259,7 +294,6 @@ void APCEnemyCharacterBase::SetDead()
 
 void APCEnemyCharacterBase::PlayDeadAnimation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Play DeadMontage"));
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 	AnimInstance->StopAllMontages(0.0f);
@@ -311,6 +345,15 @@ void APCEnemyCharacterBase::SetAIAttackDelegate(const FAICharacterAttackFinished
 
 void APCEnemyCharacterBase::AttackByAI()
 {
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && AnimInstance->Montage_IsPlaying(ComboActionMontage))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AttackByAI: ComboActionMontage is already playing, skipping!"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("DogAttack2!!!!"));
 	ProcessComboCommand();
 }
 

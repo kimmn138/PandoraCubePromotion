@@ -32,7 +32,8 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		}
 	);
-
+	
+	UE_LOG(LogTemp, Warning, TEXT("DogAttack!!!!"));
 	AIPawn->SetAIAttackDelegate(OnAttackFinished);
 	AIPawn->AttackByAI();
 	return EBTNodeResult::InProgress;
