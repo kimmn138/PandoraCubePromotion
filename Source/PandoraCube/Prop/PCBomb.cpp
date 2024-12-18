@@ -27,7 +27,7 @@ APCBomb::APCBomb()
     
     SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
     SphereComp->SetupAttachment(GasTankMesh);
-	SphereComp->InitSphereRadius(50000.f);
+	SphereComp->InitSphereRadius(500.f);
     
     FieldSystemComp = GetFieldSystemComponent();
     if (FieldSystemComp)
@@ -46,12 +46,12 @@ void APCBomb::BeginPlay()
     if (!RadialFalloffNode)
     {
         RadialFalloffNode = NewObject<URadialFalloff>(this);
-        RadialFalloffNode->Magnitude = 500000.0f;
+        RadialFalloffNode->Magnitude = 5000000.0f;
         RadialFalloffNode->MinRange = 0.0f;
         RadialFalloffNode->MaxRange = 1.0f;
         RadialFalloffNode->Default = 0.0f;
         RadialFalloffNode->Radius = SphereComp->GetScaledSphereRadius();
-        RadialFalloffNode->Falloff = EFieldFalloffType::Field_FallOff_None;
+        RadialFalloffNode->Falloff = EFieldFalloffType::Field_Falloff_Linear;
         RadialFalloffNode->Position = SphereComp->GetComponentLocation();
     }
 }

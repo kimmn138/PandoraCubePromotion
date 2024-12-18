@@ -13,7 +13,8 @@
 				"UMG",
 				"CoreUObject",
 				"AIModule",
-				"FieldSystemEngine"
+				"FieldSystemEngine",
+				"GeometryCollectionEngine"
 			]
 		}
 	],
