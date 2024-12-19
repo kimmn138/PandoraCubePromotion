@@ -24,6 +24,7 @@
 #include "CharacterStat/PCCharacterStatComponent.h"
 #include "UI/PCPlayerMainWidget.h"
 #include "Character/PCEnemyCharacterBase.h"
+#include "Player/PCPlayerController.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -174,6 +175,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 		LeanRightAction = InputActionLeanRightRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionPauseRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PandoraCube/Input/Actions/IA_Pause.IA_Pause'"));
+	if (nullptr != InputActionPauseRef.Object)
+	{
+		PauseAction = InputActionPauseRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> MetalParticleRef(TEXT("/Script/Engine.ParticleSystem'/Game/MilitaryWeapSilver/FX/P_Impact_Metal_Small_01.P_Impact_Metal_Small_01'"));
 	if (nullptr != MetalParticleRef.Object)
 	{
@@ -243,6 +250,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 			PlayerMainWidget->AddToViewport();
 			SetupCharacterWidget();
 		}
+	}
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> PauseMenuWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PauseMenuWidget.PauseMenuWidget_C"));
+	if (PauseMenuWidgetRef.Class)
+	{
+		PauseMenuWidgetClass = PauseMenuWidgetRef.Class;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableRef(TEXT("/Script/Engine.DataTable'/Game/PandoraCube/ItemData/ItemDataTable.ItemDataTable'"));
@@ -374,6 +387,7 @@ void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(LeanLeftAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::LeanLeftReleased);
 	EnhancedInputComponent->BindAction(LeanRightAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::LeanRightPressed);
 	EnhancedInputComponent->BindAction(LeanRightAction, ETriggerEvent::Completed, this, &APCPlayerCharacter::LeanRightReleased);
+	EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &APCPlayerCharacter::Pause);
 }
 
 FHandSwayValues APCPlayerCharacter::GetHandSwayFloats_Implementation() const
@@ -798,6 +812,49 @@ void APCPlayerCharacter::LeanRightPressed()
 void APCPlayerCharacter::LeanRightReleased()
 {
 	bLeanRight = 0;
+}
+
+void APCPlayerCharacter::Pause()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ESC key pressed. Current Pause State: %s"), bIsPaused ? TEXT("Paused") : TEXT("Unpaused"));
+	APCPlayerController* PlayerController = Cast<APCPlayerController>(GetController());
+	if (!PlayerController) return;
+
+	if (bIsPaused)
+	{
+		if (PauseMenuWidget)
+		{
+			PauseMenuWidget->RemoveFromViewport();
+			PauseMenuWidget = nullptr;
+		}
+
+		PlayerController->SetShowMouseCursor(false);
+		FInputModeGameOnly InputMode;
+		PlayerController->SetInputMode(InputMode);
+
+		UGameplayStatics::SetGamePaused(GetWorld(), false);
+		bIsPaused = false;
+	}
+	else
+	{
+		if (!PauseMenuWidget && PauseMenuWidgetClass)
+		{
+			PauseMenuWidget = CreateWidget<UUserWidget>(GetWorld(), PauseMenuWidgetClass);
+			if (PauseMenuWidget)
+			{
+				PauseMenuWidget->AddToViewport();
+			}
+		}
+
+		PlayerController->SetShowMouseCursor(true);
+		FInputModeGameAndUI InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+		PlayerController->SetInputMode(InputMode);
+
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+		bIsPaused = true;
+	}
 }
 
 void APCPlayerCharacter::CompleteReload()

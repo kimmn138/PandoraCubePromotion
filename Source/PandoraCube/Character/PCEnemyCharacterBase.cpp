@@ -132,7 +132,6 @@ void APCEnemyCharacterBase::ComboActionBegin()
 
 	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
 
-	// 기존 델리게이트 해제 후 재설정
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &APCEnemyCharacterBase::ComboActionEnd);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, ComboActionMontage);
@@ -147,7 +146,6 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 {
 	if (bIsDead) return;
 
-	// TargetMontage가 nullptr인 경우 처리
 	if (TargetMontage == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("ComboActionEnd: TargetMontage is NULL!"));
@@ -162,7 +160,7 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 		*TargetMontage->GetName(),
 		IsProperlyEnded ? TEXT("True") : TEXT("False"));
 
-	HasNextComboCommand = false;  // 콤보 상태 리셋
+	HasNextComboCommand = false;  
 	NotifyComboActionEnd();
 }
 
@@ -195,14 +193,14 @@ void APCEnemyCharacterBase::ComboCheck()
 		if (!AnimInstance || !AnimInstance->Montage_IsPlaying(ComboActionMontage))
 		{
 			UE_LOG(LogTemp, Error, TEXT("ComboCheck: ComboActionMontage is not playing!"));
-			ComboActionEnd(ComboActionMontage, false);  // TargetMontage 전달
+			ComboActionEnd(ComboActionMontage, false);  
 			return;
 		}
 
 		if (CurrentCombo >= ComboActionData->MaxComboCount)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("ComboCheck: Reached last combo section, ending combo."));
-			ComboActionEnd(ComboActionMontage, true);  // 정상 종료
+			ComboActionEnd(ComboActionMontage, true);  
 			return;
 		}
 

@@ -152,6 +152,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> LeanRightAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> PauseAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Sprint();
@@ -170,6 +173,7 @@ protected:
 	void LeanLeftReleased();
 	void LeanRightPressed();
 	void LeanRightReleased();
+	void Pause();
 
 	UFUNCTION()
 	void CompleteReload();
@@ -178,6 +182,8 @@ protected:
 	void CheckWallTick();
 
 	float WallDistance;
+
+	bool bIsPaused = false;
 
 // Weapon Moving Section
 protected:
@@ -247,6 +253,12 @@ protected:
 	TObjectPtr<class UPCPlayerMainWidget> PlayerMainWidget;
 
 	void SetupCharacterWidget();
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class UUserWidget> PauseMenuWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UUserWidget> PauseMenuWidget;
 
 // Inventory Section
 protected:

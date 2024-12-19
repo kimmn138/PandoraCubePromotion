@@ -2,6 +2,11 @@
 
 
 #include "Game/PCGameMode.h"
+#include "PCGameInstance.h"
+#include "Blueprint/UserWidget.h"
+#include "Sound/PCSoundManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"
 
 APCGameMode::APCGameMode()
 {
@@ -16,4 +21,28 @@ APCGameMode::APCGameMode()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
+}
+
+void APCGameMode::BeginPlay()
+{
+    Super::BeginPlay();
+
+    UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetGameInstance());
+    if (GameInstance)
+    {
+        SoundManager = GetWorld()->SpawnActor<APCSoundManager>(
+            APCSoundManager::StaticClass(),
+            FVector::ZeroVector,
+            FRotator::ZeroRotator
+        );
+
+        if (SoundManager)
+        {
+            SoundManager->SetMasterVolume(GameInstance->MasterVolume);
+            SoundManager->SetBGMVolume(GameInstance->BGMVolume);
+            SoundManager->SetSFXVolume(GameInstance->SFXVolume);
+
+            GameInstance->SetSoundManager(SoundManager);
+        }
+    }
 }

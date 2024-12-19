@@ -3,6 +3,9 @@
 
 #include "Game/PCMainMenuGameMode.h"
 #include "Blueprint/UserWidget.h"
+#include "PCGameInstance.h"
+#include "Sound/PCSoundManager.h"
+#include "GameFramework/PlayerController.h"
 
 APCMainMenuGameMode::APCMainMenuGameMode()
 {
@@ -13,6 +16,12 @@ APCMainMenuGameMode::APCMainMenuGameMode()
 	}
 
 	DefaultPawnClass = nullptr;
+
+	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/PandoraCube.PCMenuController"));
+	if (PlayerControllerClassRef.Class)
+	{
+		PlayerControllerClass = PlayerControllerClassRef.Class;
+	}
 }
 
 void APCMainMenuGameMode::BeginPlay()
@@ -25,6 +34,20 @@ void APCMainMenuGameMode::BeginPlay()
 		if (MainMenuWidget)
 		{
 			MainMenuWidget->AddToViewport();
+		}
+	}
+
+	UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetGameInstance());
+	if (GameInstance)
+	{
+		SoundManager = GetWorld()->SpawnActor<APCSoundManager>(APCSoundManager::StaticClass());
+		if (SoundManager)
+		{
+			SoundManager->SetMasterVolume(GameInstance->MasterVolume);
+			SoundManager->SetBGMVolume(GameInstance->BGMVolume);
+			SoundManager->SetSFXVolume(GameInstance->SFXVolume);
+
+			GameInstance->SetSoundManager(SoundManager);
 		}
 	}
 }

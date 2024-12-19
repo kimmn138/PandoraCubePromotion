@@ -22,4 +22,8 @@ protected:
 	TSubclassOf<class UUserWidget> MainMenuWidgetClass;
 
 	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY()
+	TObjectPtr<class APCSoundManager> SoundManager;
 };

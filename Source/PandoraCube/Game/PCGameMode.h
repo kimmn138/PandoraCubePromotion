@@ -17,4 +17,10 @@ class PANDORACUBE_API APCGameMode : public AGameModeBase
 public:
 	APCGameMode();
 
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY()
+	TObjectPtr<class APCSoundManager> SoundManager;
 };
