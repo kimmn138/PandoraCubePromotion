@@ -29,6 +29,9 @@ public:
 	virtual float GetAITurnSpeed() = 0;
 	virtual bool GetAIIsFleeing() = 0;
 	virtual void SetAIIsFleeing(bool NewFleeing) = 0;
+	virtual USoundBase* GetAISound() = 0;
+	virtual FVector GetAILocation() = 0;
+	virtual UAudioComponent* GetAIAudioComponent() = 0;
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) = 0;
 	virtual void AttackByAI() = 0;

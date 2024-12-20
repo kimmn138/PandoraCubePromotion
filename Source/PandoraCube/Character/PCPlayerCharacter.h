@@ -83,6 +83,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	TObjectPtr<class USoundBase> OtherHitSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<class USoundBase> RifleReloadSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<class USoundBase> ShotgunReloadSound;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Decal")
 	TSubclassOf<class APCBlood> BloodDecal;
 
@@ -99,6 +105,8 @@ protected:
 	virtual float GetWallDistance_Implementation() const override;
 
 	uint8 bCooling : 1;
+
+	bool bisReloading = false;
 
 	UFUNCTION()
 	void ResetFire();
@@ -182,8 +190,6 @@ protected:
 	void CheckWallTick();
 
 	float WallDistance;
-
-	bool bIsPaused = false;
 
 // Weapon Moving Section
 protected:

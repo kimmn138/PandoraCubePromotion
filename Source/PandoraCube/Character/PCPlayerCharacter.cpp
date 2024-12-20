@@ -229,6 +229,18 @@ APCPlayerCharacter::APCPlayerCharacter()
 		OtherHitSound = OtherHitSoundRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<USoundBase> RifleReloadSoundRef(TEXT("/Script/Engine.SoundCue'/Game/PandoraCube/Sound/Cue/Rifle_Reload_Cue.Rifle_Reload_Cue'"));
+	if (nullptr != RifleReloadSoundRef.Object)
+	{
+		RifleReloadSound = RifleReloadSoundRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> ShotgunReloadSoundRef(TEXT("/Script/Engine.SoundCue'/Game/PandoraCube/Sound/Cue/Shotgun_Reload_Cue.Shotgun_Reload_Cue'"));
+	if (nullptr != ShotgunReloadSoundRef.Object)
+	{
+		ShotgunReloadSound = ShotgunReloadSoundRef.Object;
+	}
+
 	static ConstructorHelpers::FClassFinder<APCBlood> BloodDecalRef(TEXT("/Script/CoreUObject.Class'/Script/PandoraCube.PCBlood'"));
 	if (nullptr != BloodDecalRef.Class)
 	{
@@ -747,9 +759,19 @@ void APCPlayerCharacter::Reload()
 
 		AnimInstanceRef->Montage_Play(CurrentReloadAnimation, 1.0f);
 
+		if ((WeaponType == EWeaponType::IT_Rifle || WeaponType == EWeaponType::IT_Pistol || WeaponType == EWeaponType::IT_SMG) && !bisReloading)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, RifleReloadSound, GetActorLocation());
+			bisReloading = true;
+		}
+		else if (WeaponType == EWeaponType::IT_Shotgun && !bisReloading)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ShotgunReloadSound, GetActorLocation());
+			bisReloading = true;
+		}
+
 		FTimerHandle ReloadTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &APCPlayerCharacter::CompleteReload, CurrentStats.ReloadTime, false);
-
 	}
 }
 
@@ -816,45 +838,25 @@ void APCPlayerCharacter::LeanRightReleased()
 
 void APCPlayerCharacter::Pause()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ESC key pressed. Current Pause State: %s"), bIsPaused ? TEXT("Paused") : TEXT("Unpaused"));
 	APCPlayerController* PlayerController = Cast<APCPlayerController>(GetController());
 	if (!PlayerController) return;
 
-	if (bIsPaused)
+	if (!PauseMenuWidget && PauseMenuWidgetClass)
 	{
+		PauseMenuWidget = CreateWidget<UUserWidget>(GetWorld(), PauseMenuWidgetClass);
 		if (PauseMenuWidget)
 		{
-			PauseMenuWidget->RemoveFromViewport();
-			PauseMenuWidget = nullptr;
+			PauseMenuWidget->AddToViewport();
 		}
-
-		PlayerController->SetShowMouseCursor(false);
-		FInputModeGameOnly InputMode;
-		PlayerController->SetInputMode(InputMode);
-
-		UGameplayStatics::SetGamePaused(GetWorld(), false);
-		bIsPaused = false;
 	}
-	else
-	{
-		if (!PauseMenuWidget && PauseMenuWidgetClass)
-		{
-			PauseMenuWidget = CreateWidget<UUserWidget>(GetWorld(), PauseMenuWidgetClass);
-			if (PauseMenuWidget)
-			{
-				PauseMenuWidget->AddToViewport();
-			}
-		}
 
-		PlayerController->SetShowMouseCursor(true);
-		FInputModeGameAndUI InputMode;
-		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
-		PlayerController->SetInputMode(InputMode);
+	PlayerController->SetShowMouseCursor(true);
+	FInputModeGameAndUI InputMode;
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+	PlayerController->SetInputMode(InputMode);
 
-		UGameplayStatics::SetGamePaused(GetWorld(), true);
-		bIsPaused = true;
-	}
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
 void APCPlayerCharacter::CompleteReload()
@@ -862,6 +864,7 @@ void APCPlayerCharacter::CompleteReload()
 	bCanAim = 1;
 	bCanFire = 1;
 	bStopLeftHandIK = 0;
+	bisReloading = false;
 
 	int32 AmmoNeeded = CurrentStats.MagSize - InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets;
 	int32 AmmoToReload = FMath::Min(AmmoNeeded, InventoryComponent->Inventory[CurrentItemSelection].TotalBullets);

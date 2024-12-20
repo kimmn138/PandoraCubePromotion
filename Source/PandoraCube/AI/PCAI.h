@@ -9,3 +9,4 @@
 #define BBKEY_CHASING TEXT("bIsChasing")
 #define BBKEY_IMMEDIATE TEXT("bImmediateChase")
 #define BBKEY_FLEEING TEXT("bIsFleeing")
+#define BBKEY_SCREAMING TEXT("bIsScreaming")

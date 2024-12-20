@@ -76,6 +76,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	FCharacterStats CurrentStats;
 
+	UPROPERTY()
+	TObjectPtr<class UAudioComponent> AudioComponent;
+
 public:
 	virtual UBlackboardData* GetBlackboardData() const override { return CurrentStats.BBAsset; }
 	virtual UBehaviorTree* GetBehaviorTree() const override { return CurrentStats.BTAsset; }
@@ -90,6 +93,9 @@ protected:
 	virtual float GetAITurnSpeed() override;
 	virtual bool GetAIIsFleeing() override;
 	virtual void SetAIIsFleeing(bool NewFleeing) override;
+	virtual USoundBase* GetAISound() override;
+	virtual FVector GetAILocation() override;
+	virtual UAudioComponent* GetAIAudioComponent() override;
 
 	virtual void SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished) override;
 	virtual void AttackByAI() override;

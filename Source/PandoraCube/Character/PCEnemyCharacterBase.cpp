@@ -14,6 +14,7 @@
 #include "AI/PCAI.h"
 #include "PCPlayerCharacter.h"
 #include "Physics/PCCollision.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 APCEnemyCharacterBase::APCEnemyCharacterBase()
@@ -40,6 +41,10 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("BlockAll"));
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent);
+	AudioComponent->bAutoActivate = false;
 
 	Stat = CreateDefaultSubobject<UPCCharacterStatComponent>(TEXT("Stat"));
 
@@ -271,6 +276,12 @@ float APCEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& 
 void APCEnemyCharacterBase::SetDead()
 {
 	bIsDead = true;
+
+	if (AudioComponent->IsPlaying())
+	{
+		AudioComponent->Stop();
+	}
+
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
@@ -334,6 +345,21 @@ bool APCEnemyCharacterBase::GetAIIsFleeing()
 void APCEnemyCharacterBase::SetAIIsFleeing(bool NewFleeing)
 {
 	bIsFleeing = NewFleeing;
+}
+
+USoundBase* APCEnemyCharacterBase::GetAISound()
+{
+	return CurrentStats.ZombieSound;
+}
+
+FVector APCEnemyCharacterBase::GetAILocation()
+{
+	return GetActorLocation();
+}
+
+UAudioComponent* APCEnemyCharacterBase::GetAIAudioComponent()
+{
+	return AudioComponent;
 }
 
 void APCEnemyCharacterBase::SetAIAttackDelegate(const FAICharacterAttackFinished& InOnAttackFinished)

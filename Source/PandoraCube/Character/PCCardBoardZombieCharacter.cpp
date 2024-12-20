@@ -63,6 +63,7 @@ APCCardBoardZombieCharacter::APCCardBoardZombieCharacter()
 			CurrentStats.AttackRadius = Row->AttackRadius;
 			CurrentStats.BBAsset = Row->BBAsset;
 			CurrentStats.BTAsset = Row->BTAsset;
+			CurrentStats.ZombieSound = Row->ZombieSound;
 			Stat->SetMaxHp(Row->MaxHp);
 			Stat->SetCurrentHp(Row->MaxHp);
 		}
