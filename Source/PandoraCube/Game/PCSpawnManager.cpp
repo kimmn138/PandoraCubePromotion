@@ -11,14 +11,7 @@ APCSpawnManager* APCSpawnManager::GetInstance(UWorld* World)
 {
     if (!Instance)
     {
-        // 로그 추가: 인스턴스가 생성되지 않았을 때 생성됨을 알림
-        UE_LOG(LogTemp, Log, TEXT("APCSpawnManager::GetInstance - Creating a new instance of APCSpawnManager"));
         Instance = World->SpawnActor<APCSpawnManager>();
-    }
-    else
-    {
-        // 로그 추가: 이미 인스턴스가 존재함을 알림
-        UE_LOG(LogTemp, Log, TEXT("APCSpawnManager::GetInstance - Returning existing instance of APCSpawnManager"));
     }
     return Instance;;
 }
@@ -27,61 +20,45 @@ void APCSpawnManager::ActivateSpawnLocations(const TArray<AActor*>& NewSpawnLoca
 {
     if (NewSpawnLocations.Num() == 0)
     {
-        // 로그 추가: 활성화할 스폰 로케이션이 없는 경우 경고
-        UE_LOG(LogTemp, Warning, TEXT("APCSpawnManager::ActivateSpawnLocations - No spawn locations provided"));
         return;
     }
-
-    // 로그 추가: 활성화된 스폰 로케이션의 수 출력
-    UE_LOG(LogTemp, Log, TEXT("APCSpawnManager::ActivateSpawnLocations - Activating %d spawn locations"), NewSpawnLocations.Num());
 
     ActiveSpawnLocations = NewSpawnLocations;
 }
 
+void APCSpawnManager::InActivateSpawnLocations()
+{
+    ActiveSpawnLocations.Empty();
+}
+
 void APCSpawnManager::SpawnZombiesInWave()
 {
-    int32 SpawnCount = GetSpawnCountBasedOnDifficulty(CurrentDifficulty);
+    UE_LOG(LogTemp, Warning, TEXT("SpawnZombiesInWave: Started"));
 
-    // 로그 추가: 스폰하려는 좀비 클래스가 설정되었는지 확인
+    SpawnCount = GetSpawnCountBasedOnDifficulty(CurrentDifficulty);
+    UE_LOG(LogTemp, Warning, TEXT("SpawnZombiesInWave: Spawn count based on difficulty: %d"), SpawnCount);
+
     if (!ZombieClass)
     {
-        UE_LOG(LogTemp, Warning, TEXT("APCSpawnManager::SpawnZombiesInWave - ZombieClass is not set"));
+        UE_LOG(LogTemp, Warning, TEXT("SpawnZombiesInWave: ZombieClass is not set. Aborting spawn."));
         return;
     }
 
-    // 로그 추가: 현재 난이도 및 스폰할 좀비 수 출력
-    UE_LOG(LogTemp, Log, TEXT("APCSpawnManager::SpawnZombiesInWave - Difficulty: %s, Spawn Count: %d"), *CurrentDifficulty, SpawnCount);
-
-    while (SpawnCount > 0 && ActiveSpawnLocations.Num() > 0)
+    if (ActiveSpawnLocations.Num() == 0)
     {
-        for (AActor* SpawnLocationActor : ActiveSpawnLocations)
-        {
-            if (APCAISpawnLocation* Location = Cast<APCAISpawnLocation>(SpawnLocationActor))
-            {
-                if (ZombieClass && SpawnCount > 0)
-                {
-                    APCCommonZombieCharacter* SpawnedZombie = GetWorld()->SpawnActor<APCCommonZombieCharacter>(ZombieClass, Location->GetSpawnLocation(), FRotator::ZeroRotator);
-
-
-                    if (SpawnedZombie)
-                    {
-                        // 웨이브로 소환된 좀비들은 즉시 추격
-                        SpawnedZombie->SetImmediateChase(true);
-                    }
-                    // 로그 추가: 좀비가 스폰된 위치 및 남은 스폰 수 출력
-                    UE_LOG(LogTemp, Log, TEXT("APCSpawnManager::SpawnZombiesInWave - Spawned a zombie at location: %s, Remaining Spawn Count: %d"), *Location->GetActorLocation().ToString(), SpawnCount - 1);
-
-                    SpawnCount--;
-                }
-            }
-        }
+        UE_LOG(LogTemp, Warning, TEXT("SpawnZombiesInWave: No active spawn locations available."));
+        return;
     }
 
-    if (SpawnCount <= 0)
-    {
-        // 로그 추가: 스폰 완료 메시지 출력
-        UE_LOG(LogTemp, Log, TEXT("APCSpawnManager::SpawnZombiesInWave - All zombies spawned"));
-    }
+    CurrentSpawnIndex = 0;
+
+    GetWorldTimerManager().SetTimer(
+        ZombieSpawnTimerHandle,
+        this,
+        &APCSpawnManager::SpawnZombie,
+        0.5f,
+        true
+    );
 }
 
 void APCSpawnManager::RegisterSpawnLocationsForTriggerZone(AActor* TriggerZone, const TArray<AActor*>& SpawnLocations)
@@ -94,8 +71,6 @@ void APCSpawnManager::RegisterSpawnLocationsForTriggerZone(AActor* TriggerZone, 
 
 int32 APCSpawnManager::GetSpawnCountBasedOnDifficulty(FString Difficulty)
 {
-    int32 SpawnCount = 0;
-
     if (Difficulty == "Easy")
     {
         SpawnCount = SpawnData.EasySpawnCount;
@@ -108,13 +83,53 @@ int32 APCSpawnManager::GetSpawnCountBasedOnDifficulty(FString Difficulty)
     {
         SpawnCount = SpawnData.HardSpawnCount;
     }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("APCSpawnManager::GetSpawnCountBasedOnDifficulty - Unknown Difficulty Level: %s"), *Difficulty);
-    }
-
-    // 로그 추가: 난이도에 따른 스폰 수 출력
-    UE_LOG(LogTemp, Log, TEXT("APCSpawnManager::GetSpawnCountBasedOnDifficulty - Difficulty: %s, Spawn Count: %d"), *Difficulty, SpawnCount);
 
     return SpawnCount;
+}
+
+void APCSpawnManager::SpawnZombie()
+{
+    if (SpawnCount <= 0 || ActiveSpawnLocations.Num() == 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("SpawnZombie: All zombies have been spawned or no active locations remain."));
+        GetWorldTimerManager().ClearTimer(ZombieSpawnTimerHandle); 
+        return;
+    }
+
+    AActor* SpawnLocationActor = ActiveSpawnLocations[CurrentSpawnIndex];
+    CurrentSpawnIndex = (CurrentSpawnIndex + 1) % ActiveSpawnLocations.Num();
+
+    if (APCAISpawnLocation* Location = Cast<APCAISpawnLocation>(SpawnLocationActor))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("SpawnZombie: Spawning zombie at location - %s"), *Location->GetName());
+
+        FVector SpawnLocation = Location->GetSpawnLocation();
+
+        APCCommonZombieCharacter* SpawnedZombie = GetWorld()->SpawnActor<APCCommonZombieCharacter>(
+            ZombieClass, SpawnLocation, FRotator::ZeroRotator
+        );
+
+        if (SpawnedZombie)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("SpawnZombie: Zombie successfully spawned - %s"), *SpawnedZombie->GetName());
+            SpawnedZombie->SetImmediateChase(true);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("SpawnZombie: Failed to spawn zombie!"));
+        }
+
+        SpawnCount--;
+        UE_LOG(LogTemp, Warning, TEXT("SpawnZombie: Remaining spawn count: %d"), SpawnCount);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("SpawnZombie: Invalid spawn location actor or failed to cast to APCAISpawnLocation"));
+    }
+
+    if (SpawnCount <= 0)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("SpawnZombie: All zombies spawned. Stopping timer."));
+        GetWorldTimerManager().ClearTimer(ZombieSpawnTimerHandle);
+    }
 }

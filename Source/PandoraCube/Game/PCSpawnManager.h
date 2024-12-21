@@ -29,9 +29,11 @@ class PANDORACUBE_API APCSpawnManager : public AActor
 	GENERATED_BODY()
 	
 public:	
+    UFUNCTION(BlueprintCallable, Category = "Singleton")
 	static APCSpawnManager* GetInstance(UWorld* World);
 
     void ActivateSpawnLocations(const TArray<AActor*>& NewSpawnLocations);
+    void InActivateSpawnLocations();
     
     void SpawnZombiesInWave();
 
@@ -51,6 +53,14 @@ protected:
 
     FString CurrentDifficulty = TEXT("Easy");
 
+    UFUNCTION()
+    void SpawnZombie();
+
 private:
     static APCSpawnManager* Instance;
+
+private:
+    int32 SpawnCount;
+    FTimerHandle ZombieSpawnTimerHandle; 
+    int32 CurrentSpawnIndex;
 };

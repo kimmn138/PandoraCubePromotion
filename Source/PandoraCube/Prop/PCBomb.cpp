@@ -11,6 +11,7 @@
 #include "Particles/ParticleSystem.h"
 #include "Sound/SoundBase.h"
 #include "Engine/DamageEvents.h"
+#include "Game/PCSpawnManager.h"
 
 APCBomb::APCBomb()
 {
@@ -142,6 +143,16 @@ void APCBomb::Explode()
                 );
             }
         }
+    }
+
+    if (!SpawnManager)
+    {
+        SpawnManager = APCSpawnManager::GetInstance(GetWorld());
+    }
+
+    if (SpawnManager)
+    {
+        SpawnManager->SpawnZombiesInWave();
     }
 
     Destroy();

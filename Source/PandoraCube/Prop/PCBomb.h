@@ -38,6 +38,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<class UStaticMeshComponent> GasTankMesh;
 
+	UPROPERTY(EditAnywhere, Category = "Spawn")
+	TObjectPtr<class APCSpawnManager> SpawnManager;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bomb", meta = (ClampMin = "0"))
 	float Health;
 

@@ -18,8 +18,7 @@ FVector APCAISpawnLocation::GetSpawnLocation() const
 {
     FVector SpawnLocation = GetActorLocation();
 
-    // 랜덤 오프셋을 추가하여 동일한 위치에서 스폰되지 않도록 함
-    float OffsetRange = 100.f;  // 랜덤 오프셋 범위
+    float OffsetRange = 100.f;  
     FVector RandomOffset = FVector(FMath::RandRange(-OffsetRange, OffsetRange), FMath::RandRange(-OffsetRange, OffsetRange), 0.f);
 
     return SpawnLocation + RandomOffset;
