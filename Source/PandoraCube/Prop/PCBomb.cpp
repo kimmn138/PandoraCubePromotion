@@ -127,7 +127,6 @@ void APCBomb::Explode()
 
     if (bHit)
     {
-        UE_LOG(LogTemp, Warning, TEXT("BOOMMMMMMM"));
         for (auto& Overlap : Overlaps)
         {
             AActor* OtherActor = Overlap.GetActor();

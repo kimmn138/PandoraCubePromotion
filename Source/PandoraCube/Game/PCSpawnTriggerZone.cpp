@@ -10,21 +10,26 @@ APCSpawnTriggerZone::APCSpawnTriggerZone()
 {
     TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
     RootComponent = TriggerBox;
+    TriggerBox->SetGenerateOverlapEvents(true);
 
     TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APCSpawnTriggerZone::OnOverlapBegin);
-
 }
 
 void APCSpawnTriggerZone::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (!SpawnManager)
+    if (!SpawnManager || !SpawnManager->IsValidLowLevelFast())
     {
         SpawnManager = APCSpawnManager::GetInstance(GetWorld());
     }
 
-    if (SpawnManager)
+    if (!SpawnManager)
+    {
+        return;
+    }
+
+    if (LinkedSpawnLocations.Num() > 0)
     {
         SpawnManager->RegisterSpawnLocationsForTriggerZone(this, LinkedSpawnLocations);
     }
@@ -41,13 +46,12 @@ void APCSpawnTriggerZone::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
     }
 }
 
-void APCSpawnTriggerZone::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void APCSpawnTriggerZone::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    if (APCPlayerCharacter* Player = Cast<APCPlayerCharacter>(OtherActor))
+    Super::EndPlay(EndPlayReason);
+
+    if (SpawnManager)
     {
-        if (SpawnManager)
-        {
-            SpawnManager->InActivateSpawnLocations();
-        }
+        SpawnManager = nullptr;
     }
 }

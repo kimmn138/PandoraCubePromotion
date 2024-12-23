@@ -34,10 +34,13 @@ APCPlayerCharacter::APCPlayerCharacter()
 
 	GetCapsuleComponent()->InitCapsuleSize(41.4f, 90.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_PCCAPSULE);
+	GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 100000.0f);
+	GetCapsuleComponent()->SetLinearDamping(10.0f);
+	GetCapsuleComponent()->SetAngularDamping(10.0f);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 540.0f);
-	GetCharacterMovement()->JumpZVelocity = 550.f;
+	GetCharacterMovement()->JumpZVelocity = 350.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 100.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;

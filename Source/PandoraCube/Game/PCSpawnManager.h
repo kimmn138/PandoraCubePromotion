@@ -13,13 +13,13 @@ struct FSpawnData
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 EasySpawnCount;
+    int32 EasySpawnCount = 10;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 MediumSpawnCount;
+    int32 MediumSpawnCount = 20;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 HardSpawnCount;
+    int32 HardSpawnCount = 30;
 };
 
 
@@ -33,7 +33,6 @@ public:
 	static APCSpawnManager* GetInstance(UWorld* World);
 
     void ActivateSpawnLocations(const TArray<AActor*>& NewSpawnLocations);
-    void InActivateSpawnLocations();
     
     void SpawnZombiesInWave();
 
@@ -42,6 +41,8 @@ public:
     int32 GetSpawnCountBasedOnDifficulty(FString Difficulty);
 
 protected:
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
     TArray<AActor*> ActiveSpawnLocations;
     TMap<AActor*, TArray<AActor*>> TriggerZoneToSpawnLocationsMap;
 
