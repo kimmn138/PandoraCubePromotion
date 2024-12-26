@@ -160,10 +160,6 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 	CurrentCombo = 0;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
-	UE_LOG(LogTemp, Warning, TEXT("ComboEnd!!!! Montage: %s, IsProperlyEnded: %s"),
-		*TargetMontage->GetName(),
-		IsProperlyEnded ? TEXT("True") : TEXT("False"));
-
 	HasNextComboCommand = false;  
 	NotifyComboActionEnd();
 }
@@ -176,11 +172,18 @@ void APCEnemyCharacterBase::SetComboCheckTimer()
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
 
 	const float AttackSpeedRate = CurrentStats.AttackRate;
-	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
+	float MontageLength = ComboActionMontage->GetPlayLength();
+	float ComboEffectiveTime = MontageLength / AttackSpeedRate;
 
 	if (ComboEffectiveTime > 0.0f)
 	{
-		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &APCEnemyCharacterBase::ComboCheck, ComboEffectiveTime, false);
+		GetWorld()->GetTimerManager().SetTimer(
+			ComboTimerHandle,
+			this,
+			&APCEnemyCharacterBase::ComboCheck,
+			ComboEffectiveTime,
+			false
+		);
 	}
 }
 

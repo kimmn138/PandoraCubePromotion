@@ -376,6 +376,7 @@ void APCPlayerCharacter::SetDead()
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	SetActorEnableCollision(false);
+	UGameplayStatics::OpenLevel(this, FName("GameOverScreen"));
 }
 
 void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
