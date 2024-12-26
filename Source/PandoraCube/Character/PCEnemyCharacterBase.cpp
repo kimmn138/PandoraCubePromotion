@@ -227,7 +227,6 @@ void APCEnemyCharacterBase::AttackHitCheck()
 
 	FHitResult OutHitResult;
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
-
 	Params.AddIgnoredActor(this);
 
 	const float AttackRange = CurrentStats.AttackRange;
@@ -236,20 +235,27 @@ void APCEnemyCharacterBase::AttackHitCheck()
 	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 	const FVector End = Start + GetActorForwardVector() * AttackRange;
 
-	bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_PCACTION, FCollisionShape::MakeSphere(AttackRadius), Params);
-	if (HitDetected)
+	TArray<FHitResult> OutHits;
+	bool bHit = GetWorld()->SweepMultiByChannel(
+		OutHits,
+		Start,
+		End,
+		FQuat::Identity,
+		CCHANNEL_PCACTION,
+		FCollisionShape::MakeSphere(AttackRadius),
+		Params
+	);
+
+	for (const FHitResult& Hit : OutHits)
 	{
-		AActor* HitActor = OutHitResult.GetActor();
+		AActor* HitActor = Hit.GetActor();
 		if (HitActor && HitActor->IsA(APCPlayerCharacter::StaticClass()))
 		{
 			FDamageEvent DamageEvent;
 			HitActor->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
 
 			HasNextComboCommand = true;
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("AttackHitCheck: Target is not a player, ignoring attack"));
+			return; 
 		}
 	}
 }

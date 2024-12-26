@@ -11,6 +11,7 @@
 #include "Engine/OverlapResult.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
+#include "Character/PCPlayerCharacter.h"
 
 UBTService_Detect::UBTService_Detect()
 {
@@ -48,7 +49,7 @@ void UBTService_Detect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 		if (bImmediateChase)
 		{
-			APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(ControllingPawn->GetWorld(), 0);
+			APCPlayerCharacter* PlayerPawn = Cast<APCPlayerCharacter>(UGameplayStatics::GetPlayerPawn(ControllingPawn->GetWorld(), 0));
 			if (PlayerPawn)
 			{
 				BlackboardComp->SetValueAsObject(BBKEY_TARGET, PlayerPawn);
