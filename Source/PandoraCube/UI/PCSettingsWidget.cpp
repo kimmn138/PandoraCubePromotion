@@ -39,6 +39,11 @@ void UPCSettingsWidget::OnMasterVolumeChanged(float Value)
     {
         GameInstance->MasterVolume = Value;
         GameInstance->SaveAudioSettings();
+
+        if (GameInstance->GetSoundManager())
+        {
+            GameInstance->GetSoundManager()->SetMasterVolume(Value);
+        }
     }
 }
 
@@ -48,6 +53,11 @@ void UPCSettingsWidget::OnBGMVolumeChanged(float Value)
     {
         GameInstance->BGMVolume = Value;
         GameInstance->SaveAudioSettings();
+
+        if (GameInstance->GetSoundManager())
+        {
+            GameInstance->GetSoundManager()->SetBGMVolume(Value);
+        }
     }
 }
 
@@ -57,5 +67,10 @@ void UPCSettingsWidget::OnSFXVolumeChanged(float Value)
     {
         GameInstance->SFXVolume = Value;
         GameInstance->SaveAudioSettings();
+
+        if (GameInstance->GetSoundManager())
+        {
+            GameInstance->GetSoundManager()->SetSFXVolume(Value);
+        }
     }
 }

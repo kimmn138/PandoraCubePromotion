@@ -11,6 +11,8 @@
 #include "Interface/PCCharacterInterface.h"
 #include "PCEnemyCharacterBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnZombieDeath);
+
 UCLASS()
 class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnimationAttackInterface, public IPCAIControllerInterface, public IPCCharacterInterface
 {
@@ -27,6 +29,9 @@ public:
 	bool bImmediateChase;
 
 	void SetImmediateChase(bool bChase);
+
+	UPROPERTY(BlueprintAssignable, Category = "Zombie")
+	FOnZombieDeath OnZombieDeath;
 
 protected:
 	void Attack();
@@ -60,9 +65,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stat, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UAnimMontage> HitMontage;
 
-	virtual void SetDead();
 	void PlayDeadAnimation();
 	void PlayHitAnimation();
+	virtual void SetDead();
 
 	float DeadEventDelayTime = 4.0f;
 

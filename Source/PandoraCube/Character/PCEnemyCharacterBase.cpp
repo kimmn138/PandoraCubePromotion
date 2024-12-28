@@ -74,7 +74,6 @@ void APCEnemyCharacterBase::TakeKnockBack(const FVector& HitLocation, const FVec
 
 	FVector KnockbackForce = KnockbackDirection * Force;
 
-	UE_LOG(LogTemp, Warning, TEXT("KnockBack!!"));
 	LaunchCharacter(KnockbackForce, true, false);
 }
 
@@ -140,8 +139,6 @@ void APCEnemyCharacterBase::ComboActionBegin()
 	EndDelegate.BindUObject(this, &APCEnemyCharacterBase::ComboActionEnd);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, ComboActionMontage);
 
-	UE_LOG(LogTemp, Warning, TEXT("Montage_Play: ComboActionMontage started successfully!"));
-
 	ComboTimerHandle.Invalidate();
 	SetComboCheckTimer();
 }
@@ -152,7 +149,6 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 
 	if (TargetMontage == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ComboActionEnd: TargetMontage is NULL!"));
 		return;
 	}
 
@@ -199,14 +195,12 @@ void APCEnemyCharacterBase::ComboCheck()
 
 		if (!AnimInstance || !AnimInstance->Montage_IsPlaying(ComboActionMontage))
 		{
-			UE_LOG(LogTemp, Error, TEXT("ComboCheck: ComboActionMontage is not playing!"));
 			ComboActionEnd(ComboActionMontage, false);  
 			return;
 		}
 
 		if (CurrentCombo >= ComboActionData->MaxComboCount)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ComboCheck: Reached last combo section, ending combo."));
 			ComboActionEnd(ComboActionMontage, true);  
 			return;
 		}
@@ -292,6 +286,9 @@ void APCEnemyCharacterBase::SetDead()
 		AIController->BrainComponent->StopLogic(TEXT("Character is Dead"));
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("Zombie is dead! Broadcasting OnZombieDeath."));
+	OnZombieDeath.Broadcast();
+
 	FTimerHandle DeadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
 		[&]()
@@ -373,11 +370,9 @@ void APCEnemyCharacterBase::AttackByAI()
 
 	if (AnimInstance && AnimInstance->Montage_IsPlaying(ComboActionMontage))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AttackByAI: ComboActionMontage is already playing, skipping!"));
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("DogAttack2!!!!"));
 	ProcessComboCommand();
 }
 

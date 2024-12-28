@@ -22,6 +22,12 @@ APCMainMenuGameMode::APCMainMenuGameMode()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> MainMenuBGMSoundRef(TEXT("/Game/PandoraCube/Sound/Cue/MainMenu_Cue.MainMenu_Cue"));
+	if (MainMenuBGMSoundRef.Object)
+	{
+		MainMenuBGM = MainMenuBGMSoundRef.Object;
+	}
 }
 
 void APCMainMenuGameMode::BeginPlay()
@@ -49,5 +55,15 @@ void APCMainMenuGameMode::BeginPlay()
 
 			GameInstance->SetSoundManager(SoundManager);
 		}
+	}
+
+	PlayMainMenuBGM();
+}
+
+void APCMainMenuGameMode::PlayMainMenuBGM()
+{
+	if (SoundManager && MainMenuBGM)
+	{
+		SoundManager->PlayBGM(MainMenuBGM);
 	}
 }

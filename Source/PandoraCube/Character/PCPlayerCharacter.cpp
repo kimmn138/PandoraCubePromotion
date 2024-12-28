@@ -842,6 +842,8 @@ void APCPlayerCharacter::LeanRightReleased()
 
 void APCPlayerCharacter::Pause()
 {
+	PauseMenuWidget = nullptr;
+
 	APCPlayerController* PlayerController = Cast<APCPlayerController>(GetController());
 	if (!PlayerController) return;
 

@@ -17,10 +17,27 @@ class PANDORACUBE_API APCGameMode : public AGameModeBase
 public:
 	APCGameMode();
 
+	UFUNCTION(BlueprintCallable)
+	void PlayBackgroundMusic();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayWaveMusic();
+
+	UFUNCTION()
+	void OnAllZombiesDead();
+
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	TObjectPtr<class USoundBase> BackgroundMusic;
+
+	UPROPERTY(EditAnywhere, Category = "Audio")
+	TObjectPtr<class USoundBase> WaveMusic;
 
 private:
 	UPROPERTY()
 	TObjectPtr<class APCSoundManager> SoundManager;
+
+	FTimerHandle WaveMusicTimerHandle;
 };

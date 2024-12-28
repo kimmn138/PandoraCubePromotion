@@ -5,10 +5,16 @@
 #include "Sound/SoundClass.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/PCGameInstance.h"
+#include "Components/AudioComponent.h"
 
 APCSoundManager::APCSoundManager()
 {
     PrimaryActorTick.bCanEverTick = false;
+
+    BGMAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("BGMAudioComponent"));
+    BGMAudioComponent->bAutoActivate = false; 
+    BGMAudioComponent->bIsUISound = true; 
+    RootComponent = BGMAudioComponent;
 }
 
 void APCSoundManager::BeginPlay()
@@ -17,12 +23,27 @@ void APCSoundManager::BeginPlay()
 
     InitializeSoundClasses();
 
-    UPCGameInstance* GameInstance = Cast<UPCGameInstance>(UGameplayStatics::GetGameInstance(this));
+    GameInstance = Cast<UPCGameInstance>(UGameplayStatics::GetGameInstance(this));
     if (GameInstance)
     {
         SetMasterVolume(GameInstance->MasterVolume);
         SetBGMVolume(GameInstance->BGMVolume);
         SetSFXVolume(GameInstance->SFXVolume);
+    }
+}
+
+void APCSoundManager::PlayBGM(USoundBase* BGM)
+{
+    if (BGM)
+    {
+        if (BGMAudioComponent->IsPlaying())
+        {
+            BGMAudioComponent->Stop();
+        }
+
+        BGMAudioComponent->SetSound(BGM);
+        BGMAudioComponent->SetVolumeMultiplier(GameInstance ? GameInstance->BGMVolume : 1.0f);
+        BGMAudioComponent->Play();
     }
 }
 
@@ -51,6 +72,11 @@ void APCSoundManager::SetBGMVolume(float Volume)
     if (BGMSoundClass)
     {
         BGMSoundClass->Properties.Volume = Volume;
+    }
+
+    if (BGMAudioComponent && BGMAudioComponent->IsPlaying())
+    {
+        BGMAudioComponent->SetVolumeMultiplier(BGMSoundClass->Properties.Volume);
     }
 }
 

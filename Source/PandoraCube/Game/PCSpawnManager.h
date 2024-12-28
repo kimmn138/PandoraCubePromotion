@@ -22,6 +22,7 @@ struct FSpawnData
     int32 HardSpawnCount = 30;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllZombiesDead);
 
 UCLASS()
 class PANDORACUBE_API APCSpawnManager : public AActor
@@ -40,6 +41,9 @@ public:
 
     int32 GetSpawnCountBasedOnDifficulty(FString Difficulty);
 
+    UPROPERTY(BlueprintAssignable, Category = "SpawnManager")
+    FOnAllZombiesDead OnAllZombiesDead;
+
 protected:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -54,8 +58,14 @@ protected:
 
     FString CurrentDifficulty = TEXT("Easy");
 
+    UPROPERTY()
+    int32 AliveZombiesCount = 0;
+
     UFUNCTION()
     void SpawnZombie();
+
+    UFUNCTION()
+    void OnZombieDeath();
 
 private:
     static APCSpawnManager* Instance;

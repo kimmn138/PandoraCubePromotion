@@ -23,6 +23,11 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Audio")
+	TObjectPtr<class USoundBase> MainMenuBGM;
+
+	void PlayMainMenuBGM();
+
 private:
 	UPROPERTY()
 	TObjectPtr<class APCSoundManager> SoundManager;

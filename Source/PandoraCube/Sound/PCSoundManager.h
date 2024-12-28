@@ -14,12 +14,26 @@ class PANDORACUBE_API APCSoundManager : public AActor
 public:
     APCSoundManager();
 
+    UFUNCTION(BlueprintCallable, Category = "Audio")
+    void PlayBGM(USoundBase* BGM);
+
+    UFUNCTION(BlueprintCallable, Category = "Audio")
     void SetMasterVolume(float Volume);
+
+    UFUNCTION(BlueprintCallable, Category = "Audio")
     void SetBGMVolume(float Volume);
+
+    UFUNCTION(BlueprintCallable, Category = "Audio")
     void SetSFXVolume(float Volume);
 
 protected:
     virtual void BeginPlay() override;
+
+    UPROPERTY()
+    TObjectPtr<class UPCGameInstance> GameInstance;
+
+    UPROPERTY()
+    TObjectPtr<class UAudioComponent> BGMAudioComponent;
 
 private:
     UPROPERTY()
@@ -32,4 +46,5 @@ private:
     TObjectPtr<class USoundClass> SFXSoundClass;
 
     void InitializeSoundClasses();
+
 };
