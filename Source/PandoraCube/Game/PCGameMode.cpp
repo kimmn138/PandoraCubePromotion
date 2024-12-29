@@ -35,6 +35,13 @@ APCGameMode::APCGameMode()
     {
         WaveMusic = WaveMusicRef.Object;
     }
+
+    GameStartTime = 0.0f;
+    GameEndTime = 0.0f;
+    PauseStartTime = 0.0f;
+    TotalPausedTime = 0.0f;
+    bIsGameRunning = false;
+    bIsPaused = false;
 }
 
 void APCGameMode::PlayBackgroundMusic()
@@ -60,22 +67,11 @@ void APCGameMode::BeginPlay()
     APCSpawnManager* SpawnManager = APCSpawnManager::GetInstance(GetWorld());
     if (SpawnManager)
     {
-        UE_LOG(LogTemp, Warning, TEXT("SpawnManager Singleton found. Binding OnAllZombiesDead event."));
-
         if (!SpawnManager->OnAllZombiesDead.IsBound())
         {
             SpawnManager->OnAllZombiesDead.RemoveAll(this);
             SpawnManager->OnAllZombiesDead.AddDynamic(this, &APCGameMode::OnAllZombiesDead);
-            UE_LOG(LogTemp, Warning, TEXT("OnAllZombiesDead event successfully bound in APCGameMode."));
         }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("OnAllZombiesDead event was already bound in APCGameMode."));
-        }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("SpawnManager Singleton not found!"));
     }
 
     UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetGameInstance());
@@ -98,10 +94,59 @@ void APCGameMode::BeginPlay()
             PlayBackgroundMusic();
         }
     }
+
+    StartGameTimer();
 }
 
 void APCGameMode::OnAllZombiesDead()
 {
-    UE_LOG(LogTemp, Warning, TEXT("All zombies are dead. Switching back to Background Music."));
     PlayBackgroundMusic();
+}
+
+void APCGameMode::StartGameTimer()
+{
+    GameStartTime = GetWorld()->GetTimeSeconds();
+    TotalPausedTime = 0.0f;
+    bIsGameRunning = true;
+    bIsPaused = false;
+}
+
+void APCGameMode::StopGameTimer()
+{
+    if (bIsGameRunning)
+    {
+        GameEndTime = GetWorld()->GetTimeSeconds();
+        bIsGameRunning = false;
+
+        float ElapsedTime = GameEndTime - GameStartTime - TotalPausedTime;
+    }
+}
+
+void APCGameMode::PauseGameTimer()
+{
+    if (bIsGameRunning && !bIsPaused)
+    {
+        PauseStartTime = GetWorld()->GetTimeSeconds();
+        bIsPaused = true;
+    }
+}
+
+void APCGameMode::ResumeGameTimer()
+{
+    if (bIsPaused)
+    {
+        float PauseEndTime = GetWorld()->GetTimeSeconds();
+        TotalPausedTime += PauseEndTime - PauseStartTime;
+        bIsPaused = false;
+    }
+}
+
+FString APCGameMode::GetElapsedTime() const
+{
+    float ElapsedTime = bIsGameRunning ? GetWorld()->GetTimeSeconds() - GameStartTime - TotalPausedTime : GameEndTime - GameStartTime - TotalPausedTime;
+
+    int32 Minutes = FMath::FloorToInt(ElapsedTime / 60.0f);
+    int32 Seconds = FMath::FloorToInt(FMath::Fmod(ElapsedTime, 60.0f));
+
+    return FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 }

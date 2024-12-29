@@ -26,6 +26,12 @@ public:
 	UFUNCTION()
 	void OnAllZombiesDead();
 
+	void StartGameTimer();
+	void StopGameTimer();
+	void PauseGameTimer();
+	void ResumeGameTimer();
+	FString GetElapsedTime() const;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -34,6 +40,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Audio")
 	TObjectPtr<class USoundBase> WaveMusic;
+
+	float GameStartTime;
+	float GameEndTime;
+	float PauseStartTime;
+	float TotalPausedTime;
+	bool bIsGameRunning;
+	bool bIsPaused;
 
 private:
 	UPROPERTY()

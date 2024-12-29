@@ -25,6 +25,8 @@
 #include "UI/PCPlayerMainWidget.h"
 #include "Character/PCEnemyCharacterBase.h"
 #include "Player/PCPlayerController.h"
+#include "Game/PCGameMode.h"
+#include "Game/PCGameInstance.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -35,8 +37,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(41.4f, 90.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_PCCAPSULE);
 	GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 100000.0f);
-	GetCapsuleComponent()->SetLinearDamping(10.0f);
-	GetCapsuleComponent()->SetAngularDamping(10.0f);
+	GetCapsuleComponent()->SetLinearDamping(50.0f);
+	GetCapsuleComponent()->SetAngularDamping(50.0f);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 540.0f);
@@ -383,6 +385,19 @@ void APCPlayerCharacter::SetDead()
 {
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	SetActorEnableCollision(false);
+
+	APCGameMode* GameMode = Cast<APCGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->StopGameTimer();
+	}
+
+	UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetGameInstance());
+	if (GameInstance)
+	{
+		GameInstance->SetElapsedTime(GameMode->GetElapsedTime());
+	}
+
 	UGameplayStatics::OpenLevel(this, FName("GameOverScreen"));
 }
 
@@ -853,6 +868,12 @@ void APCPlayerCharacter::Pause()
 
 	APCPlayerController* PlayerController = Cast<APCPlayerController>(GetController());
 	if (!PlayerController) return;
+
+	APCGameMode* GameMode = Cast<APCGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode)
+	{
+		GameMode->PauseGameTimer();
+	}
 
 	if (!PauseMenuWidget && PauseMenuWidgetClass)
 	{

@@ -12,12 +12,24 @@
 #include "Sound/SoundBase.h"
 #include "Engine/DamageEvents.h"
 #include "Game/PCSpawnManager.h"
+#include "Physics/PCCollision.h"
 
 APCBomb::APCBomb()
 {
     GasTankMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GasTankMesh"));
     GasTankMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
     GasTankMesh->SetSimulatePhysics(true);
+    GasTankMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+    GasTankMesh->BodyInstance.bLockXTranslation = true;
+    GasTankMesh->BodyInstance.bLockYTranslation = true; 
+    GasTankMesh->BodyInstance.bLockZTranslation = true; 
+    GasTankMesh->BodyInstance.bLockXRotation = true; 
+    GasTankMesh->BodyInstance.bLockYRotation = true;
+    GasTankMesh->BodyInstance.bLockZRotation = true; 
+
+    GasTankMesh->BodyInstance.UpdateMassProperties();
+    GasTankMesh->RecreatePhysicsState();
     RootComponent = GasTankMesh;
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> GasTankMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/IndustryPropsPack6/Meshes/SM_Barrel01.SM_Barrel01'"));
@@ -163,6 +175,7 @@ void APCBomb::Explode()
 
     if (SpawnManager)
     {
+        UE_LOG(LogTemp, Warning, TEXT("BOOM"));
         SpawnManager->SpawnZombiesInWave();
     }
 

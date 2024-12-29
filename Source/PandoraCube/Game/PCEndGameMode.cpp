@@ -2,6 +2,7 @@
 
 
 #include "Game/PCEndGameMode.h"
+#include "Game/PCGameInstance.h"
 
 APCEndGameMode::APCEndGameMode()
 {

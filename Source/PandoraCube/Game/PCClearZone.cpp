@@ -5,6 +5,8 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Character/PCPlayerCharacter.h"
+#include "Game/PCGameMode.h"
+#include "Game/PCGameInstance.h"
 
 APCClearZone::APCClearZone()
 {
@@ -24,6 +26,15 @@ void APCClearZone::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
 	if (APCPlayerCharacter* Player = Cast<APCPlayerCharacter>(OtherActor))
 	{
+		APCGameMode* GameMode = Cast<APCGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		GameMode->StopGameTimer();
+
+		UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetGameInstance());
+		if (GameInstance)
+		{
+			GameInstance->SetElapsedTime(GameMode->GetElapsedTime());
+		}
+
 		UGameplayStatics::OpenLevel(this, FName("VictoryScreen"));
 	}
 }

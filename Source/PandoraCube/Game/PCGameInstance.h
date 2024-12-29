@@ -28,7 +28,15 @@ public:
     void SetSoundManager(APCSoundManager* InSoundManager) { SoundManager = InSoundManager; }
     TObjectPtr<class APCSoundManager> GetSoundManager() const { return SoundManager; }
 
+    UFUNCTION(BlueprintCallable, Category = "Game Time")
+    void SetElapsedTime(const FString& Time) { ElapsedTime = Time; }
+    UFUNCTION(BlueprintCallable, Category = "Game Time")
+    FString GetElapsedTime() const { return ElapsedTime; }
+
 private:
     UPROPERTY()
     TObjectPtr<class APCSoundManager> SoundManager;
+
+    UPROPERTY()
+    FString ElapsedTime;
 };

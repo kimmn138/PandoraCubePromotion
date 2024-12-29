@@ -20,7 +20,6 @@ APCSpawnManager* APCSpawnManager::GetInstance(UWorld* World)
         for (TActorIterator<APCSpawnManager> It(World); It; ++It)
         {
             Instance = *It;
-            UE_LOG(LogTemp, Warning, TEXT("Found pre-placed APCSpawnManager in the level."));
             break;
         }
 
@@ -30,7 +29,6 @@ APCSpawnManager* APCSpawnManager::GetInstance(UWorld* World)
             if (Instance)
             {
                 Instance->AddToRoot();
-                UE_LOG(LogTemp, Warning, TEXT("APCSpawnManager dynamically created and added to root."));
             }
         }
     }
@@ -148,7 +146,6 @@ void APCSpawnManager::SpawnZombie()
             SpawnedZombie->OnZombieDeath.AddDynamic(this, &APCSpawnManager::OnZombieDeath);
 
             AliveZombiesCount++;
-            UE_LOG(LogTemp, Warning, TEXT("Zombie spawned! Alive Zombies: %d"), AliveZombiesCount);
         }
 
         SpawnCount--;
@@ -163,20 +160,15 @@ void APCSpawnManager::SpawnZombie()
 void APCSpawnManager::OnZombieDeath()
 {
     AliveZombiesCount--;
-    UE_LOG(LogTemp, Warning, TEXT("Zombie died! Remaining Zombies: %d"), AliveZombiesCount);
 
     if (AliveZombiesCount <= 0)
     {
-        UE_LOG(LogTemp, Warning, TEXT("All zombies are dead. Triggering OnAllZombiesDead event."));
-
         if (OnAllZombiesDead.IsBound())
         {
-            UE_LOG(LogTemp, Warning, TEXT("OnAllZombiesDead is bound. Broadcasting..."));
             OnAllZombiesDead.Broadcast();
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("OnAllZombiesDead is STILL NOT bound! Attempting rebinding."));
             APCGameMode* GameMode = Cast<APCGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
             if (GameMode)
             {
@@ -184,13 +176,8 @@ void APCSpawnManager::OnZombieDeath()
                 {
                     OnAllZombiesDead.RemoveAll(GameMode);
                     OnAllZombiesDead.AddDynamic(GameMode, &APCGameMode::OnAllZombiesDead);
-                    UE_LOG(LogTemp, Warning, TEXT("OnAllZombiesDead has been rebound dynamically."));
                 }
                 OnAllZombiesDead.Broadcast();
-            }
-            else
-            {
-                UE_LOG(LogTemp, Error, TEXT("Failed to cast GameMode to APCGameMode!"));
             }
         }
     }
