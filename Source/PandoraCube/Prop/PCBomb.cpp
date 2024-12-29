@@ -25,6 +25,18 @@ APCBomb::APCBomb()
     {
         GasTankMesh->SetStaticMesh(GasTankMeshRef.Object);
     }
+
+    static ConstructorHelpers::FObjectFinder<USoundBase> ExplosionSoundRef(TEXT("/Script/Engine.SoundCue'/Game/PandoraCube/Sound/Cue/Explosion_Cue.Explosion_Cue'"));
+    if (ExplosionSoundRef.Object)
+    {
+        ExplosionSound = ExplosionSoundRef.Object;
+    }
+
+    static ConstructorHelpers::FObjectFinder<UParticleSystem> ExplosionEffectRef(TEXT("/Script/Engine.ParticleSystem'/Game/Realistic_Starter_VFX_Pack_Vol2/Particles/Explosion/P_Explosion_Big_A.P_Explosion_Big_A'"));
+    if (nullptr != ExplosionEffectRef.Object)
+    {
+        ExplosionEffect = ExplosionEffectRef.Object;
+    }
     
     SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
     SphereComp->SetupAttachment(GasTankMesh);
