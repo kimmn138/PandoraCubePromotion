@@ -232,6 +232,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 		OtherHitSound = OtherHitSoundRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<USoundBase> PlayerHitSoundRef(TEXT("/Script/Engine.SoundCue'/Game/PandoraCube/Sound/Cue/Hit_Cue.Hit_Cue'"));
+	if (nullptr != PlayerHitSoundRef.Object)
+	{
+		PlayerHitSound = PlayerHitSoundRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<USoundBase> RifleReloadSoundRef(TEXT("/Script/Engine.SoundCue'/Game/PandoraCube/Sound/Cue/Rifle_Reload_Cue.Rifle_Reload_Cue'"));
 	if (nullptr != RifleReloadSoundRef.Object)
 	{
@@ -367,6 +373,7 @@ float APCPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	UGameplayStatics::PlaySoundAtLocation(this, PlayerHitSound, GetActorLocation());
 	Stat->ApplyDamage(DamageAmount);
 
 	return DamageAmount;

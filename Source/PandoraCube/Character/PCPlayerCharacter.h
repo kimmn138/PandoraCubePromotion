@@ -84,6 +84,9 @@ protected:
 	TObjectPtr<class USoundBase> OtherHitSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<class USoundBase> PlayerHitSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	TObjectPtr<class USoundBase> RifleReloadSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
