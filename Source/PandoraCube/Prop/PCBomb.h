@@ -20,6 +20,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void PostInitializeComponents() override;
+
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TObjectPtr<class UFieldSystemComponent> FieldSystemComp;
 

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Item/ItemTypes.h"
-#include "Engine/DataTable.h"
 #include "PCPickUpBase.generated.h"
 
 UCLASS()
@@ -20,6 +19,8 @@ public:
 public:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision")
 	TObjectPtr<class UBoxComponent> BoxCollision;

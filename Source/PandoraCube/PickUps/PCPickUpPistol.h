@@ -17,4 +17,9 @@ class PANDORACUBE_API APCPickUpPistol : public APCPickUpBase
 public:
 	APCPickUpPistol();
 	
+	virtual void BeginPlay() override;
+
+protected:
+	UFUNCTION()
+	void ApplyOverlayMaterial(USkeletalMeshComponent* SkeletalMeshComp, UMaterialInterface* OverlayMaterial);
 };

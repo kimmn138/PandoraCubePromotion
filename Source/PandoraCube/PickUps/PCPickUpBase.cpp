@@ -5,18 +5,16 @@
 #include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Character/PCPlayerCharacter.h"
+#include "Engine/DataTable.h"
 
 // Sets default values
 APCPickUpBase::APCPickUpBase()
 {
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
 	BoxCollision->SetBoxExtent(FVector(42.95897f, 17.13143f, 3.400801f));
-	BoxCollision->SetSimulatePhysics(true);
 	BoxCollision->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	BoxCollision->SetCollisionProfileName(TEXT("PhysicsActor"));
-	BoxCollision->SetMassOverrideInKg(NAME_None, 100.0f, true); 
-	BoxCollision->SetLinearDamping(5.0f); 
-	BoxCollision->SetAngularDamping(5.0f);
+	BoxCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	RootComponent = BoxCollision;
 
 	BoxCollision2 = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision2"));
@@ -44,6 +42,19 @@ void APCPickUpBase::BeginPlay()
 	BoxCollision2->OnComponentBeginOverlap.AddDynamic(this, &APCPickUpBase::OnOverlapBegin);
 }
 
+void APCPickUpBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (BoxCollision)
+	{
+		BoxCollision->SetSimulatePhysics(true);
+		BoxCollision->SetMassOverrideInKg(NAME_None, 100.0f, true);
+		BoxCollision->SetLinearDamping(5.0f);
+		BoxCollision->SetAngularDamping(5.0f);
+	}
+}
+
 void APCPickUpBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->ActorHasTag(TEXT("Player")))
@@ -54,4 +65,3 @@ void APCPickUpBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 		}
 	}
 }
-

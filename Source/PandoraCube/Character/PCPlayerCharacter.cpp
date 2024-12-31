@@ -36,9 +36,6 @@ APCPlayerCharacter::APCPlayerCharacter()
 
 	GetCapsuleComponent()->InitCapsuleSize(41.4f, 90.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_PCCAPSULE);
-	GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 100000.0f);
-	GetCapsuleComponent()->SetLinearDamping(50.0f);
-	GetCapsuleComponent()->SetAngularDamping(50.0f);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 540.0f);
@@ -281,7 +278,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 		PauseMenuWidgetClass = PauseMenuWidgetRef.Class;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableRef(TEXT("/Script/Engine.DataTable'/Game/PandoraCube/ItemData/ItemDataTable.ItemDataTable'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableRef(TEXT("/Game/PandoraCube/ItemData/ItemDataTable.ItemDataTable"));
 	if (nullptr != ItemDataTableRef.Object)
 	{
 		ItemDataTable = ItemDataTableRef.Object;
@@ -307,6 +304,13 @@ void APCPlayerCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	Stat->OnHpZero.AddUObject(this, &APCPlayerCharacter::SetDead);
+
+	if (GetCapsuleComponent())
+	{
+		GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 100000.0f);
+		GetCapsuleComponent()->SetLinearDamping(50.0f);
+		GetCapsuleComponent()->SetAngularDamping(50.0f);
+	}
 }
 
 void APCPlayerCharacter::Tick(float DeltaTime)

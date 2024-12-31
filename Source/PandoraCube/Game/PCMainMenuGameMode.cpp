@@ -6,6 +6,7 @@
 #include "PCGameInstance.h"
 #include "Sound/PCSoundManager.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 APCMainMenuGameMode::APCMainMenuGameMode()
 {
@@ -33,6 +34,8 @@ APCMainMenuGameMode::APCMainMenuGameMode()
 void APCMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenuLevel"));
 
 	if (MainMenuWidgetClass)
 	{

@@ -30,11 +30,6 @@ void APCWeaponSpawnLocation::SpawnRandomWeapon()
             FRotator SpawnRotation = GetActorRotation();
 
             APCPickUpBase* SpawnedWeapon = GetWorld()->SpawnActor<APCPickUpBase>(SelectedWeaponClass, SpawnLocation, SpawnRotation);
-
-            if (SpawnedWeapon)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Weapon spawned: %s"), *SpawnedWeapon->GetName());
-            }
         }
     }
 }

@@ -2,6 +2,7 @@
 
 
 #include "PickUps/PCPickUpShotgun.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 APCPickUpShotgun::APCPickUpShotgun()
 {
@@ -10,13 +11,24 @@ APCPickUpShotgun::APCPickUpShotgun()
 	{
 		GunMesh->SetSkeletalMesh(GunMeshRef.Object);
 	}
+}
+
+void APCPickUpShotgun::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (GunMesh)
+	{
+		UMaterialInterface* OverlayMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/PandoraCube/Materials/Outline_Mat.Outline_Mat"));
+		ApplyOverlayMaterial(GunMesh, OverlayMaterial);
+	}
 
 	FName RowName = FName(*FString::FromInt(4));
 	FString ContextString = TEXT("Item Data Context");
 
 	if (ItemDataTable)
 	{
-		FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
+		const FInventoryItem* Row = ItemDataTable->FindRow<FInventoryItem>(RowName, ContextString);
 
 		if (Row)
 		{
@@ -26,4 +38,15 @@ APCPickUpShotgun::APCPickUpShotgun()
 			Item.ItemType = EItemType::Primary;
 		}
 	}
+}
+
+void APCPickUpShotgun::ApplyOverlayMaterial(USkeletalMeshComponent* SkeletalMeshComp, UMaterialInterface* OverlayMaterial)
+{
+	if (!SkeletalMeshComp || !OverlayMaterial)
+	{
+		return;
+	}
+
+	SkeletalMeshComp->OverlayMaterial = OverlayMaterial;
+	SkeletalMeshComp->MarkRenderStateDirty();
 }

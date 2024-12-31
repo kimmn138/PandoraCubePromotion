@@ -12,7 +12,7 @@ APCSoundManager::APCSoundManager()
     PrimaryActorTick.bCanEverTick = false;
 
     BGMAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("BGMAudioComponent"));
-    BGMAudioComponent->bAutoActivate = false; 
+    BGMAudioComponent->bAutoActivate = false;
     BGMAudioComponent->bIsUISound = true; 
     RootComponent = BGMAudioComponent;
 }

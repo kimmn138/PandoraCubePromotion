@@ -18,18 +18,7 @@ APCBomb::APCBomb()
 {
     GasTankMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GasTankMesh"));
     GasTankMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
-    GasTankMesh->SetSimulatePhysics(true);
     GasTankMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-
-    GasTankMesh->BodyInstance.bLockXTranslation = true;
-    GasTankMesh->BodyInstance.bLockYTranslation = true; 
-    GasTankMesh->BodyInstance.bLockZTranslation = true; 
-    GasTankMesh->BodyInstance.bLockXRotation = true; 
-    GasTankMesh->BodyInstance.bLockYRotation = true;
-    GasTankMesh->BodyInstance.bLockZRotation = true; 
-
-    GasTankMesh->BodyInstance.UpdateMassProperties();
-    GasTankMesh->RecreatePhysicsState();
     RootComponent = GasTankMesh;
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> GasTankMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/IndustryPropsPack6/Meshes/SM_Barrel01.SM_Barrel01'"));
@@ -78,6 +67,27 @@ void APCBomb::BeginPlay()
         RadialFalloffNode->Radius = SphereComp->GetScaledSphereRadius();
         RadialFalloffNode->Falloff = EFieldFalloffType::Field_Falloff_Linear;
         RadialFalloffNode->Position = SphereComp->GetComponentLocation();
+    }
+}
+
+void APCBomb::PostInitializeComponents()
+{
+    Super::PostInitializeComponents();
+
+    if (GasTankMesh)
+    {
+        GasTankMesh->SetSimulatePhysics(true);
+
+        GasTankMesh->BodyInstance.bLockXTranslation = true;
+        GasTankMesh->BodyInstance.bLockYTranslation = true;
+        GasTankMesh->BodyInstance.bLockZTranslation = true;
+
+        GasTankMesh->BodyInstance.bLockXRotation = true;
+        GasTankMesh->BodyInstance.bLockYRotation = true;
+        GasTankMesh->BodyInstance.bLockZRotation = true;
+
+        GasTankMesh->BodyInstance.UpdateMassProperties();
+        GasTankMesh->RecreatePhysicsState();
     }
 }
 

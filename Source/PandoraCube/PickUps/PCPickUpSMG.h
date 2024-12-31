@@ -16,4 +16,11 @@ class PANDORACUBE_API APCPickUpSMG : public APCPickUpBase
 	
 public:
 	APCPickUpSMG();
+
+	virtual void BeginPlay() override;
+
+protected:
+	UFUNCTION()
+	void ApplyOverlayMaterial(USkeletalMeshComponent* SkeletalMeshComp, UMaterialInterface* OverlayMaterial);
+
 };
