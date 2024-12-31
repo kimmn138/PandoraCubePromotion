@@ -8,6 +8,17 @@ USTRUCT(BlueprintType)
 struct FCharacterStats : public FTableRowBase
 {
     GENERATED_BODY()
+    
+    FCharacterStats()
+        : Damage(0.0f)
+        , Speed(0.0f)
+        , MaxSpeed(0.0f)
+        , MaxHp(100.0f)
+        , AttackRate(1.0f)
+        , AttackRange(100.0f)
+        , AttackRadius(50.0f)
+    {
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CharacterStat")
     FName Name;
@@ -47,6 +58,13 @@ USTRUCT(BlueprintType)
 struct FPlayerStats : public FTableRowBase
 {
     GENERATED_BODY()
+    
+    FPlayerStats()
+        : Speed(300.0f)
+        , MaxSpeed(600.0f)
+        , MaxHp(100.0f)
+    {
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerStat")
     float Speed;

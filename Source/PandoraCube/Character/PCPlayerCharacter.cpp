@@ -268,7 +268,6 @@ APCPlayerCharacter::APCPlayerCharacter()
 		if (PlayerMainWidget)
 		{
 			PlayerMainWidget->AddToViewport();
-			SetupCharacterWidget();
 		}
 	}
 
@@ -338,6 +337,8 @@ void APCPlayerCharacter::BeginPlay()
 
 	Tags.Add(FName("Flesh"));
 	Tags.Add(FName("Player"));
+
+	SetupCharacterWidget();
 
 	EquipItem();
 

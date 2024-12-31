@@ -35,8 +35,6 @@ void APCMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UGameplayStatics::OpenLevel(GetWorld(), FName("MainMenuLevel"));
-
 	if (MainMenuWidgetClass)
 	{
 		UUserWidget* MainMenuWidget = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass);

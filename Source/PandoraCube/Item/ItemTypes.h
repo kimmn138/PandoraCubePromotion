@@ -27,6 +27,20 @@ USTRUCT(BlueprintType)
 struct FWeaponStats : public FTableRowBase
 {
     GENERATED_BODY()
+    
+    FWeaponStats()
+        : Damage(10.0f)
+        , FireRate(0.5f)
+        , MagSize(30)
+        , Range(1000)
+        , ProceduralRecoil(0.1f)
+        , InputRecoil(0.2f)
+        , ReloadTime(2.0f)
+        , Force(100.0f)
+        , ShoutgunPelletCount(8)
+        , ShoutgunSpreadAngle(15.0f)
+    {
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemStat")
     float Damage;
@@ -63,6 +77,19 @@ USTRUCT(BlueprintType)
 struct FInventoryItem : public FTableRowBase
 {
     GENERATED_BODY()
+    
+    FInventoryItem()
+        : Name(NAME_None)
+        , Icon(nullptr)
+        , Type(EWeaponType::IT_Hand)
+        , ItemType(EItemType::Primary)
+        , WeaponClass(nullptr)
+        , Stats()
+        , ReloadAnimation(nullptr)
+        , PickupClass(nullptr)
+        , AnimState(EAnimState::Hands)
+    {
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FName Name;
@@ -96,6 +123,15 @@ USTRUCT(BlueprintType)
 struct FDynamicInventoryItem : public FTableRowBase
 {
     GENERATED_BODY()
+    
+    FDynamicInventoryItem()
+        : ID(-1)
+        , CurrentBullets(0)
+        , TotalBullets(0)
+        , Scope(0)
+        , ItemType(EItemType::Primary)
+    {
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DynamicItem")
     int32 ID = -1;
