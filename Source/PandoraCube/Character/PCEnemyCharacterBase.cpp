@@ -59,6 +59,21 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	Tags.Add(FName("Flesh"));
 }
 
+void APCEnemyCharacterBase::BeginDestroy()
+{
+	if (GetMesh())
+	{
+		GetMesh()->SetAnimInstanceClass(nullptr);
+	}
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+
+	Super::BeginDestroy();
+}
+
 void APCEnemyCharacterBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -286,7 +301,6 @@ void APCEnemyCharacterBase::SetDead()
 		AIController->BrainComponent->StopLogic(TEXT("Character is Dead"));
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Zombie is dead! Broadcasting OnZombieDeath."));
 	OnZombieDeath.Broadcast();
 
 	FTimerHandle DeadTimerHandle;

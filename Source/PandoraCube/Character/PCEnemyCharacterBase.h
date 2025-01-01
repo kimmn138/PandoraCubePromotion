@@ -21,6 +21,8 @@ class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnima
 public:
 	APCEnemyCharacterBase();
 
+	virtual void BeginDestroy() override;
+
 	virtual void PostInitializeComponents() override;
 
 	void TakeKnockBack(const FVector& HitLocation, const FVector& ImpactDirection, float Force);

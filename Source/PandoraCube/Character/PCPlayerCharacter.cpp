@@ -374,11 +374,6 @@ void APCPlayerCharacter::BeginPlay()
 
 void APCPlayerCharacter::BeginDestroy()
 {
-	if (GetMesh())
-	{
-		GetMesh()->SetAnimInstanceClass(nullptr);
-	}
-
 	Super::BeginDestroy();
 }
 
@@ -409,7 +404,20 @@ void APCPlayerCharacter::SetDead()
 		GameInstance->SetElapsedTime(GameMode->GetElapsedTime());
 	}
 
-	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	if (GetMesh())
+	{
+		GetMesh()->SetAnimInstanceClass(nullptr);
+	}
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+
+	if (GEngine)
+	{
+		GEngine->ForceGarbageCollection(true);
+	}
 
 	UGameplayStatics::OpenLevel(this, FName("GameOverScreen"));
 }
@@ -832,7 +840,12 @@ void APCPlayerCharacter::DropItem()
 				SpawnedPickup->Item = InventoryComponent->Inventory[CurrentItemSelection];
 				InventoryComponent->Inventory[CurrentItemSelection] = FDynamicInventoryItem();
 				InventoryComponent->Inventory[CurrentItemSelection].ID = -1;
-				EquippedWeapon->Destroy();
+
+				if (EquippedWeapon)
+				{
+					EquippedWeapon->Destroy();
+				}
+
 				if (CurrentItemSelection == 0 && InventoryComponent->Inventory[1].ID != -1)
 				{
 					CurrentItemSelection = 1;
@@ -1331,7 +1344,7 @@ void APCPlayerCharacter::EquipItem()
 
 						if (WeaponClass)
 						{
-							if (EquippedWeapon != nullptr)
+							if (EquippedWeapon)
 							{
 								EquippedWeapon->Destroy();
 								EquippedWeapon = nullptr;
@@ -1363,7 +1376,7 @@ void APCPlayerCharacter::EquipItem()
 			}
 			else
 			{
-				if (EquippedWeapon != nullptr)
+				if (EquippedWeapon)
 				{
 					EquippedWeapon->Destroy();
 					EquippedWeapon = nullptr;
@@ -1373,7 +1386,7 @@ void APCPlayerCharacter::EquipItem()
 		}
 		else
 		{
-			if (EquippedWeapon != nullptr)
+			if (EquippedWeapon)
 			{
 				EquippedWeapon->Destroy();
 				EquippedWeapon = nullptr;
@@ -1401,7 +1414,10 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 					if (InventoryComponent->Inventory[0].ID == -1)
 					{
 						InventoryComponent->Inventory[0] = Item;
-						PickUp->Destroy();
+						if (PickUp)
+						{
+							PickUp->Destroy();
+						}
 						CurrentItemSelection = 0;
 						EquipItem();
 					}
@@ -1415,7 +1431,10 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 					if (InventoryComponent->Inventory[1].ID == -1)
 					{
 						InventoryComponent->Inventory[1] = Item;
-						PickUp->Destroy();
+						if (PickUp)
+						{
+							PickUp->Destroy();
+						}
 						CurrentItemSelection = 1;
 						EquipItem();
 					}

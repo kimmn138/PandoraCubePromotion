@@ -31,5 +31,6 @@ protected:
     UFUNCTION()
     void OnGeometryBreak(const FChaosBreakEvent& Event);
 
+    UFUNCTION()
     void DestroyActor();
 };
