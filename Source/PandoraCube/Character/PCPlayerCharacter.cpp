@@ -409,6 +409,8 @@ void APCPlayerCharacter::SetDead()
 		GameInstance->SetElapsedTime(GameMode->GetElapsedTime());
 	}
 
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+
 	UGameplayStatics::OpenLevel(this, FName("GameOverScreen"));
 }
 
