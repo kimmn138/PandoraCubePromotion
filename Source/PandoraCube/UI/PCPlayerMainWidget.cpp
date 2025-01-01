@@ -59,7 +59,7 @@ void UPCPlayerMainWidget::UpdateHpText(float NewCurrentHp)
 
 void UPCPlayerMainWidget::UpdateCurrentAmmoText(float NewCurrentAmmo)
 {
-	ensure(CurrentAmmo > 0.0f);
+	ensure(CurrentAmmo >= 0.0f);
 	if (CurrentAmmoTextInt)
 	{
 		int32 CurrentAmmoInt = static_cast<int32>(NewCurrentAmmo);
@@ -71,7 +71,7 @@ void UPCPlayerMainWidget::UpdateCurrentAmmoText(float NewCurrentAmmo)
 
 void UPCPlayerMainWidget::UpdateMaxAmmoText(float NewMaxAmmo)
 {
-	ensure(MaxAmmo > 0.0f);
+	ensure(MaxAmmo >= 0.0f);
 	if (MaxAmmoTextInt)
 	{
 		int32 MaxAmmoInt = static_cast<int32>(NewMaxAmmo);

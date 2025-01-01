@@ -50,6 +50,7 @@ APCBomb::APCBomb()
     }
 
     Tags.Add(FName("Bomb"));
+    Tags.Add(FName("Metal"));
     Health = 200.0f;
 }
 

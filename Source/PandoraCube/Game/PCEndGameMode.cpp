@@ -6,5 +6,4 @@
 
 APCEndGameMode::APCEndGameMode()
 {
-	DefaultPawnClass = nullptr;
 }

@@ -27,6 +27,7 @@
 #include "Player/PCPlayerController.h"
 #include "Game/PCGameMode.h"
 #include "Game/PCGameInstance.h"
+#include "Engine/DataTable.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -60,10 +61,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	ControllerTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("ControllerTimeline"));
-	ControllerRecoilInterpFunction.BindUFunction(this, FName("HandleTimelineProgress"));
 	
 	AimTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("AimTimeline"));
-	AimInterpFunction.BindUFunction(this, FName("SetCameraLocation"));
 
 	InventoryComponent = CreateDefaultSubobject<UPCInventoryComponent>(TEXT("Inventory"));
 
@@ -79,12 +78,6 @@ APCPlayerCharacter::APCPlayerCharacter()
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
-	}
-
-	static ConstructorHelpers::FClassFinder<APCWeaponBase> WeaponClassRef(TEXT("/Script/PandoraCube.PCWeaponBase"));
-	if (nullptr != WeaponClassRef.Class)
-	{
-		WeaponClass = WeaponClassRef.Class;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> ControllerRecoilCurveRef(TEXT("/Script/Engine.CurveFloat'/Game/PandoraCube/Curve/ControllerCurveFloat.ControllerCurveFloat'"));
@@ -264,11 +257,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 	static ConstructorHelpers::FClassFinder<UPCPlayerMainWidget> PlayerMainWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PlayerMainWidget.PlayerMainWidget_C"));
 	if (PlayerMainWidgetRef.Class)
 	{
-		PlayerMainWidget = CreateWidget<UPCPlayerMainWidget>(GetWorld(), PlayerMainWidgetRef.Class);
-		if (PlayerMainWidget)
-		{
-			PlayerMainWidget->AddToViewport();
-		}
+		PlayerMainWidgetClass = PlayerMainWidgetRef.Class;
 	}
 
 	static ConstructorHelpers::FClassFinder<UUserWidget> PauseMenuWidgetRef(TEXT("/Game/PandoraCube/Blueprints/Widget/PauseMenuWidget.PauseMenuWidget_C"));
@@ -277,17 +266,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 		PauseMenuWidgetClass = PauseMenuWidgetRef.Class;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> ItemDataTableRef(TEXT("/Game/PandoraCube/ItemData/ItemDataTable.ItemDataTable"));
-	if (nullptr != ItemDataTableRef.Object)
-	{
-		ItemDataTable = ItemDataTableRef.Object;
-	}
-
 	SideMov = 0.0f;
 	MouseX = 0.0f;
 	MouseY = 0.0f;
 
 	AnimInstanceRef = nullptr;
+	ItemDataTable = nullptr;
 
 	bCanAim = 1;
 	bCanFire = 1;
@@ -338,9 +322,17 @@ void APCPlayerCharacter::BeginPlay()
 	Tags.Add(FName("Flesh"));
 	Tags.Add(FName("Player"));
 
-	SetupCharacterWidget();
+	if (!PlayerMainWidget && PlayerMainWidgetClass)
+	{
+		PlayerMainWidget = CreateWidget<UPCPlayerMainWidget>(GetWorld(), PlayerMainWidgetClass);
+		if (PlayerMainWidget)
+		{
+			PlayerMainWidget->AddToViewport();
+			SetupCharacterWidget();
+		}
+	}
 
-	EquipItem();
+	//EquipItem();
 
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -356,6 +348,10 @@ void APCPlayerCharacter::BeginPlay()
 
 	AnimInstanceRef = GetMesh()->GetAnimInstance();
 	check(AnimInstanceRef != nullptr && "Failed to get Animation instance. AnimInstanceRef is null!");
+
+	ControllerRecoilInterpFunction.BindUFunction(this, FName("HandleTimelineProgress"));
+
+	AimInterpFunction.BindUFunction(this, FName("SetCameraLocation"));
 
 	if (ControllerRecoilCurve)
 	{
@@ -374,6 +370,16 @@ void APCPlayerCharacter::BeginPlay()
 	FTimerHandle CheckWallTimer;
 
 	GetWorld()->GetTimerManager().SetTimer(CheckWallTimer, this, &APCPlayerCharacter::CheckWallTick, 0.02f, true);
+}
+
+void APCPlayerCharacter::BeginDestroy()
+{
+	if (GetMesh())
+	{
+		GetMesh()->SetAnimInstanceClass(nullptr);
+	}
+
+	Super::BeginDestroy();
 }
 
 float APCPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -1416,10 +1422,6 @@ void APCPlayerCharacter::AddItemToInventory_Implementation(AActor* PickUp, FDyna
 						return;
 					}
 				}
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Item not found in the data table for RowName: %s"), *RowName.ToString());
 			}
 		}
 	}

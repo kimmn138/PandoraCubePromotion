@@ -9,7 +9,6 @@
 #include "InputActionValue.h"
 #include "Components/TimelineComponent.h"
 #include "Component/PCInventoryComponent.h"
-#include "Engine/DataTable.h"
 #include "Item/ItemTypes.h"
 #include "Animation/AnimMontage.h"
 #include "PCPlayerCharacter.generated.h"
@@ -29,6 +28,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+    virtual void BeginDestroy() override;
 
 // Animation Section
 protected:
@@ -261,6 +262,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UPCPlayerMainWidget> PlayerMainWidget;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class UPCPlayerMainWidget> PlayerMainWidgetClass;
+
 	void SetupCharacterWidget();
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -275,7 +279,7 @@ protected:
 	TObjectPtr<class UPCInventoryComponent> InventoryComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> ItemDataTable;
+	TObjectPtr<class UDataTable> ItemDataTable;
 
 	void EquipItem();
 	int32 CurrentItemSelection;

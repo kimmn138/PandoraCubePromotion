@@ -5,30 +5,11 @@
 #include "Blueprint/UserWidget.h"
 #include "PCGameInstance.h"
 #include "Sound/PCSoundManager.h"
-#include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/PCMenuController.h"
 
 APCMainMenuGameMode::APCMainMenuGameMode()
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> MainMenuWidgetBPClass(TEXT("/Game/PandoraCube/Blueprints/Widget/MainMenuWidget.MainMenuWidget_C"));
-	if (MainMenuWidgetBPClass.Class)
-	{
-		MainMenuWidgetClass = MainMenuWidgetBPClass.Class;
-	}
-
-	DefaultPawnClass = nullptr;
-
-	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/PandoraCube.PCMenuController"));
-	if (PlayerControllerClassRef.Class)
-	{
-		PlayerControllerClass = PlayerControllerClassRef.Class;
-	}
-
-	static ConstructorHelpers::FObjectFinder<USoundBase> MainMenuBGMSoundRef(TEXT("/Game/PandoraCube/Sound/Cue/MainMenu_Cue.MainMenu_Cue"));
-	if (MainMenuBGMSoundRef.Object)
-	{
-		MainMenuBGM = MainMenuBGMSoundRef.Object;
-	}
 }
 
 void APCMainMenuGameMode::BeginPlay()
@@ -41,6 +22,12 @@ void APCMainMenuGameMode::BeginPlay()
 		if (MainMenuWidget)
 		{
 			MainMenuWidget->AddToViewport();
+			APCMenuController* PC = Cast<APCMenuController>(GetWorld()->GetFirstPlayerController());
+			FInputModeUIOnly InputModeData;
+			InputModeData.SetWidgetToFocus(MainMenuWidget->TakeWidget());
+			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PC->SetInputMode(InputModeData);
+			PC->bShowMouseCursor = true;
 		}
 	}
 

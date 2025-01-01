@@ -39,5 +39,5 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Data, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UDataTable> ItemDataTable;
+	TObjectPtr<class UDataTable> ItemDataTable;
 };

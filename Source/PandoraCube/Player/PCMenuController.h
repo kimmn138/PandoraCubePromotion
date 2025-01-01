@@ -13,7 +13,4 @@ UCLASS()
 class PANDORACUBE_API APCMenuController : public APlayerController
 {
 	GENERATED_BODY()
-	
-protected:
-	virtual void BeginPlay() override;
 };

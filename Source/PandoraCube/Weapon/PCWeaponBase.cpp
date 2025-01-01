@@ -15,11 +15,5 @@ APCWeaponBase::APCWeaponBase()
 
 	AimOffset = CreateDefaultSubobject<USceneComponent>(TEXT("AimOffset"));
 	AimOffset->SetupAttachment(RootComponent);
-
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SkeletalMeshMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/MilitaryWeapSilver/Weapons/Assault_Rifle_A.Assault_Rifle_A'"));
-	if (SkeletalMeshMeshRef.Object)
-	{
-		SkeletalMesh->SetSkeletalMesh(SkeletalMeshMeshRef.Object);
-	}
 }
 

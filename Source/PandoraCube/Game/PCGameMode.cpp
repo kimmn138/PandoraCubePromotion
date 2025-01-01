@@ -12,30 +12,6 @@
 
 APCGameMode::APCGameMode()
 {
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Game/PandoraCube/Blueprints/BP_PCPlayerCharacter.BP_PCPlayerCharacter_C"));
-	if (DefaultPawnClassRef.Class)
-	{
-		DefaultPawnClass = DefaultPawnClassRef.Class;
-	}
-
-	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassRef(TEXT("/Script/PandoraCube.PCPlayerController"));
-	if (PlayerControllerClassRef.Class)
-	{
-		PlayerControllerClass = PlayerControllerClassRef.Class;
-	}
-
-    static ConstructorHelpers::FObjectFinder<USoundBase> BackgroundMusicRef(TEXT("/Game/PandoraCube/Sound/Cue/InGame_Cue.InGame_Cue"));
-    if (BackgroundMusicRef.Object)
-    {
-        BackgroundMusic = BackgroundMusicRef.Object;
-    }
-
-    static ConstructorHelpers::FObjectFinder<USoundBase> WaveMusicRef(TEXT("/Game/PandoraCube/Sound/Cue/InWave_Cue.InWave_Cue"));
-    if (WaveMusicRef.Object)
-    {
-        WaveMusic = WaveMusicRef.Object;
-    }
-
     GameStartTime = 0.0f;
     GameEndTime = 0.0f;
     PauseStartTime = 0.0f;

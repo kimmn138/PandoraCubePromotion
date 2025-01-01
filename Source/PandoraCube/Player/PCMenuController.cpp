@@ -3,10 +3,3 @@
 
 #include "Player/PCMenuController.h"
 
-void APCMenuController::BeginPlay()
-{
-	Super::BeginPlay();
-
-	FInputModeUIOnly UIOnlyInputMode;
-	SetInputMode(UIOnlyInputMode);
-}
