@@ -7,6 +7,14 @@
 #include "Sound/PCSoundManager.h"
 #include "PCGameInstance.generated.h"
 
+
+UENUM(BlueprintType)
+enum class EDifficultyLevel : uint8
+{
+    EASY     UMETA(DisplayName = "Easy"),
+    NORMAL   UMETA(DisplayName = "Normal"),
+    HARD     UMETA(DisplayName = "Hard")
+};
 /**
  * 
  */
@@ -32,6 +40,26 @@ public:
     void SetElapsedTime(const FString& Time) { ElapsedTime = Time; }
     UFUNCTION(BlueprintCallable, Category = "Game Time")
     FString GetElapsedTime() const { return ElapsedTime; }
+
+    UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+    EDifficultyLevel SelectedDifficulty = EDifficultyLevel::NORMAL;
+
+    UFUNCTION(BlueprintCallable)
+    void SetDifficulty(EDifficultyLevel NewDifficulty);
+
+    UFUNCTION(BlueprintCallable)
+    EDifficultyLevel GetDifficulty();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DifficultyModifiers")
+    float EasyMultiplier = 0.6f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DifficultyModifiers")
+    float NormalMultiplier = 1.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DifficultyModifiers")
+    float HardMultiplier = 1.5f;
+
+    float GetDifficultyMultiplier(EDifficultyLevel SelectedDifficulty);
 
 private:
     UPROPERTY()

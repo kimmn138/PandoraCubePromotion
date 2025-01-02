@@ -404,6 +404,11 @@ void APCPlayerCharacter::SetDead()
 		GameInstance->SetElapsedTime(GameMode->GetElapsedTime());
 	}
 
+	if (GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->StopAllMontages(0.0f);
+	}
+
 	if (GetMesh())
 	{
 		GetMesh()->SetAnimInstanceClass(nullptr);
@@ -414,10 +419,7 @@ void APCPlayerCharacter::SetDead()
 		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 	}
 
-	if (GEngine)
-	{
-		GEngine->ForceGarbageCollection(true);
-	}
+	Destroy();
 
 	UGameplayStatics::OpenLevel(this, FName("GameOverScreen"));
 }

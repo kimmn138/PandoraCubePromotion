@@ -16,4 +16,7 @@ class PANDORACUBE_API APCBookHeadZombieCharacter : public APCEnemyCharacterBase
 	
 public:
 	APCBookHeadZombieCharacter();
+
+protected:
+	virtual void BeginPlay() override;
 };

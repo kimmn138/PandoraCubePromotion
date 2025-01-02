@@ -5,6 +5,7 @@
 #include "CharacterStat/PCCharacterStatComponent.h"
 #include "Animation/AnimMontage.h"
 #include "PCComboActionData.h"
+#include "Game/PCGameInstance.h"
 
 APCDogZombieCharacter::APCDogZombieCharacter()
 {
@@ -51,8 +52,6 @@ APCDogZombieCharacter::APCDogZombieCharacter()
 
 		if (Row)
 		{
-			CurrentStats.Damage = Row->Damage;
-			CurrentStats.MaxHp = Row->MaxHp;
 			CurrentStats.Speed = Row->Speed;
 			CurrentStats.MaxSpeed = Row->MaxSpeed;
 			CurrentStats.AttackRate = Row->AttackRate;
@@ -61,8 +60,36 @@ APCDogZombieCharacter::APCDogZombieCharacter()
 			CurrentStats.BBAsset = Row->BBAsset;
 			CurrentStats.BTAsset = Row->BTAsset;
 			CurrentStats.ZombieSound = Row->ZombieSound;
-			Stat->SetMaxHp(Row->MaxHp);
-			Stat->SetCurrentHp(Row->MaxHp);
+		}
+	}
+}
+
+void APCDogZombieCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	FString ContextString = TEXT("Stat Data Context");
+	if (StatDataTable)
+	{
+		FCharacterStats* Row = StatDataTable->FindRow<FCharacterStats>(TEXT("3"), ContextString);
+
+		if (Row)
+		{
+			float DifficultyMultiplier = 1.0f;
+			if (GetWorld())
+			{
+				UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetWorld()->GetGameInstance());
+				if (GameInstance)
+				{
+					DifficultyMultiplier = GameInstance->GetDifficultyMultiplier(GameInstance->GetDifficulty());
+				}
+			}
+
+			CurrentStats.Damage = Row->Damage * DifficultyMultiplier;
+			CurrentStats.MaxHp = Row->MaxHp * DifficultyMultiplier;
+
+			Stat->SetMaxHp(CurrentStats.MaxHp);
+			Stat->SetCurrentHp(CurrentStats.MaxHp);
 		}
 	}
 }

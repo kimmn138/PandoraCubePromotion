@@ -16,4 +16,7 @@ class PANDORACUBE_API APCDogZombieCharacter : public APCEnemyCharacterBase
 	
 public:
 	APCDogZombieCharacter();
+
+protected:
+	virtual void BeginPlay() override;
 };

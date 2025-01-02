@@ -291,14 +291,22 @@ void APCEnemyCharacterBase::SetDead()
 		AudioComponent->Stop();
 	}
 
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+
 	PlayDeadAnimation();
 	SetActorEnableCollision(false);
 
 	APCAIController* AIController = Cast<APCAIController>(GetController());
-	if (AIController)
+	if (AIController->BrainComponent)
 	{
 		AIController->BrainComponent->StopLogic(TEXT("Character is Dead"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SetDead: AIController or BrainComponent is nullptr!"));
 	}
 
 	OnZombieDeath.Broadcast();
@@ -307,7 +315,15 @@ void APCEnemyCharacterBase::SetDead()
 	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
 		[&]()
 		{
-			Destroy();
+			if (OnZombieDeath.IsBound())
+			{
+				OnZombieDeath.RemoveAll(this);
+			}
+
+			if (IsValid(this))
+			{
+				Destroy();
+			}
 		}
 	), DeadEventDelayTime, false);
 }

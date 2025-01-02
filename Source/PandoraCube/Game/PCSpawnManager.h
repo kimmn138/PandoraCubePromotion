@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Character/PCCommonZombieCharacter.h"
+#include "Game/PCGameInstance.h"
 #include "PCSpawnManager.generated.h"
 
 USTRUCT(BlueprintType)
@@ -16,10 +17,10 @@ struct FSpawnData
     int32 EasySpawnCount = 10;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 MediumSpawnCount = 20;
+    int32 MediumSpawnCount = 15;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 HardSpawnCount = 30;
+    int32 HardSpawnCount = 20;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllZombiesDead);
@@ -39,7 +40,7 @@ public:
 
     void RegisterSpawnLocationsForTriggerZone(AActor* TriggerZone, const TArray<AActor*>& SpawnLocations);
 
-    int32 GetSpawnCountBasedOnDifficulty(FString Difficulty);
+    int32 GetSpawnCountBasedOnDifficulty(EDifficultyLevel Difficulty);
 
     UPROPERTY(BlueprintAssignable, Category = "SpawnManager")
     FOnAllZombiesDead OnAllZombiesDead;
@@ -56,7 +57,7 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
     FSpawnData SpawnData;
 
-    FString CurrentDifficulty = TEXT("Easy");
+    EDifficultyLevel CurrentDifficulty;
 
     UPROPERTY()
     int32 AliveZombiesCount = 0;

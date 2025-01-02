@@ -51,6 +51,15 @@ void APCSpawnManager::ActivateSpawnLocations(const TArray<AActor*>& NewSpawnLoca
 
 void APCSpawnManager::SpawnZombiesInWave()
 {
+    if (GetWorld())
+    {
+        UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetWorld()->GetGameInstance());
+        if (GameInstance)
+        {
+            CurrentDifficulty = GameInstance->GetDifficulty();
+        }
+    }
+
     SpawnCount = GetSpawnCountBasedOnDifficulty(CurrentDifficulty);
 
     if (SpawnCount <= 0)
@@ -93,24 +102,21 @@ void APCSpawnManager::RegisterSpawnLocationsForTriggerZone(AActor* TriggerZone, 
     }
 }
 
-int32 APCSpawnManager::GetSpawnCountBasedOnDifficulty(FString Difficulty)
+int32 APCSpawnManager::GetSpawnCountBasedOnDifficulty(EDifficultyLevel Difficulty)
 {
     int32 SCount = 0;
 
-    if (Difficulty == "Easy")
+    switch (Difficulty)
     {
-        SCount = SpawnData.EasySpawnCount;
+    case EDifficultyLevel::EASY:
+        return SpawnData.EasySpawnCount;
+    case EDifficultyLevel::NORMAL:
+        return SpawnData.MediumSpawnCount;
+    case EDifficultyLevel::HARD:
+        return SpawnData.HardSpawnCount;
+    default:
+        return SpawnData.MediumSpawnCount;
     }
-    else if (Difficulty == "Medium")
-    {
-        SCount = SpawnData.MediumSpawnCount;
-    }
-    else if (Difficulty == "Hard")
-    {
-        SCount = SpawnData.HardSpawnCount;
-    }
-
-    return SCount;
 }
 
 void APCSpawnManager::SpawnZombie()

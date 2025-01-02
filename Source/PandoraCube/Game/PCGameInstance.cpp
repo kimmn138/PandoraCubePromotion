@@ -34,3 +34,28 @@ void UPCGameInstance::LoadAudioSettings()
         SFXVolume = SaveGameInstance->SFXVolume;
     }
 }
+
+void UPCGameInstance::SetDifficulty(EDifficultyLevel NewDifficulty)
+{
+    SelectedDifficulty = NewDifficulty;
+}
+
+EDifficultyLevel UPCGameInstance::GetDifficulty()
+{
+    return SelectedDifficulty;
+}
+
+float UPCGameInstance::GetDifficultyMultiplier(EDifficultyLevel Difficulty)
+{
+    switch (Difficulty)
+    {
+        case EDifficultyLevel::EASY:
+            return EasyMultiplier;
+        case EDifficultyLevel::NORMAL:
+            return NormalMultiplier;
+        case EDifficultyLevel::HARD:
+            return HardMultiplier;
+        default:
+            return 1.0f;
+    }
+}

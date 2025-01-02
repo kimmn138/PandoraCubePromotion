@@ -18,5 +18,5 @@ public:
 	APCCommonZombieCharacter();
 
 protected:
-
+	virtual void BeginPlay() override;
 };

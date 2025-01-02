@@ -8,6 +8,7 @@
 #include "AI/PCAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AI/PCAI.h"
+#include "Game/PCGameInstance.h"
 
 APCCardBoardZombieCharacter::APCCardBoardZombieCharacter()
 {
@@ -54,8 +55,6 @@ APCCardBoardZombieCharacter::APCCardBoardZombieCharacter()
 
 		if (Row)
 		{
-			CurrentStats.Damage = Row->Damage;
-			CurrentStats.MaxHp = Row->MaxHp;
 			CurrentStats.Speed = Row->Speed;
 			CurrentStats.MaxSpeed = Row->MaxSpeed;
 			CurrentStats.AttackRate = Row->AttackRate;
@@ -64,8 +63,36 @@ APCCardBoardZombieCharacter::APCCardBoardZombieCharacter()
 			CurrentStats.BBAsset = Row->BBAsset;
 			CurrentStats.BTAsset = Row->BTAsset;
 			CurrentStats.ZombieSound = Row->ZombieSound;
-			Stat->SetMaxHp(Row->MaxHp);
-			Stat->SetCurrentHp(Row->MaxHp);
+		}
+	}
+}
+
+void APCCardBoardZombieCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	FString ContextString = TEXT("Stat Data Context");
+	if (StatDataTable)
+	{
+		FCharacterStats* Row = StatDataTable->FindRow<FCharacterStats>(TEXT("4"), ContextString);
+
+		if (Row)
+		{
+			float DifficultyMultiplier = 1.0f;
+			if (GetWorld())
+			{
+				UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetWorld()->GetGameInstance());
+				if (GameInstance)
+				{
+					DifficultyMultiplier = GameInstance->GetDifficultyMultiplier(GameInstance->GetDifficulty());
+				}
+			}
+
+			CurrentStats.Damage = Row->Damage * DifficultyMultiplier;
+			CurrentStats.MaxHp = Row->MaxHp * DifficultyMultiplier;
+
+			Stat->SetMaxHp(CurrentStats.MaxHp);
+			Stat->SetCurrentHp(CurrentStats.MaxHp);
 		}
 	}
 }
