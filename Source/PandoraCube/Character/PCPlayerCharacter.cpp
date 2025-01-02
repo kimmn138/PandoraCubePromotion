@@ -409,11 +409,6 @@ void APCPlayerCharacter::SetDead()
 		GetMesh()->GetAnimInstance()->StopAllMontages(0.0f);
 	}
 
-	if (GetMesh())
-	{
-		GetMesh()->SetAnimInstanceClass(nullptr);
-	}
-
 	if (GetWorld())
 	{
 		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);

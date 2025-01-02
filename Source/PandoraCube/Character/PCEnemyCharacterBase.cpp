@@ -63,7 +63,10 @@ void APCEnemyCharacterBase::BeginDestroy()
 {
 	if (GetMesh())
 	{
-		GetMesh()->SetAnimInstanceClass(nullptr);
+		if (GetMesh()->GetAnimInstance())
+		{
+			GetMesh()->GetAnimInstance()->StopAllMontages(0.0f);
+		}
 	}
 
 	if (GetWorld())
