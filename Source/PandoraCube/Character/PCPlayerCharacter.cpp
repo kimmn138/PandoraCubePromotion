@@ -45,6 +45,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 100.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->bIgnoreBaseRotation = true;
+	GetCharacterMovement()->bApplyGravityWhileJumping = true;
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
@@ -293,6 +295,7 @@ void APCPlayerCharacter::PostInitializeComponents()
 		GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 100000.0f);
 		GetCapsuleComponent()->SetLinearDamping(50.0f);
 		GetCapsuleComponent()->SetAngularDamping(50.0f);
+		GetCapsuleComponent()->SetSimulatePhysics(false);
 	}
 }
 
@@ -375,6 +378,16 @@ void APCPlayerCharacter::BeginPlay()
 void APCPlayerCharacter::BeginDestroy()
 {
 	Super::BeginDestroy();
+}
+
+void APCPlayerCharacter::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+
+	if (Other && Other->IsA(APCEnemyCharacterBase::StaticClass()))
+	{
+		//GetCharacterMovement()->Velocity = FVector::OneVector * 20.0f;
+	}
 }
 
 float APCPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -592,8 +605,6 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
-					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShootRay();
 					FOutputDeviceNull Ar;
@@ -630,8 +641,6 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
-					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShootRay();
 					FOutputDeviceNull Ar;
@@ -665,8 +674,6 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
-					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShotgunShootRay();
 					FOutputDeviceNull Ar;
@@ -700,8 +707,6 @@ void APCPlayerCharacter::Fire()
 			{
 				if (BulletsLeft())
 				{
-					FString NumberAsString = FString::FromInt(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
-					UKismetSystemLibrary::PrintString(GetWorld(), NumberAsString, true, true, FColor::Green, 2.0f);
 					ReduceBullet();
 					ShootRay();
 					FOutputDeviceNull Ar;

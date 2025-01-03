@@ -34,7 +34,7 @@ void APCPickUpSMG::BeginPlay()
 		{
 			Item.ID = 5;
 			Item.CurrentBullets = Row->Stats.MagSize;
-			Item.TotalBullets = Row->Stats.MagSize * 3;
+			Item.TotalBullets = Row->Stats.MagSize * 5;
 			Item.ItemType = EItemType::Primary;
 		}
 	}

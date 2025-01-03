@@ -6,15 +6,10 @@
 #include "Animation/AnimMontage.h"
 #include "PCComboActionData.h"
 #include "Game/PCGameInstance.h"
+#include "Engine/AssetManager.h"
 
 APCBookHeadZombieCharacter::APCBookHeadZombieCharacter()
 {
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/BookHeadMonster/Meshes/BookHeadMonster.BookHeadMonster'"));
-	if (CharacterMeshRef.Object)
-	{
-		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	}
-
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_BookHeadMonsterAnimationBlueprint.ABP_BookHeadMonsterAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
@@ -92,4 +87,13 @@ void APCBookHeadZombieCharacter::BeginPlay()
 			Stat->SetCurrentHp(CurrentStats.MaxHp);
 		}
 	}
+}
+
+void APCBookHeadZombieCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	FSoftObjectPath MeshPath(TEXT("/Game/BookHeadMonster/Meshes/BookHeadMonster.BookHeadMonster"));
+
+	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(MeshPath, FStreamableDelegate::CreateUObject(this, &APCEnemyCharacterBase::NPCMeshLoadCompleted));
 }

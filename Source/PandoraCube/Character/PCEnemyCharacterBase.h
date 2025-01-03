@@ -9,6 +9,7 @@
 #include "CharacterStat/CharacterStat.h"
 #include "Interface/PCAIControllerInterface.h"
 #include "Interface/PCCharacterInterface.h"
+#include "Engine/StreamableManager.h"
 #include "PCEnemyCharacterBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnZombieDeath);
@@ -36,8 +37,6 @@ public:
 	FOnZombieDeath OnZombieDeath;
 
 protected:
-	void Attack();
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
 	TObjectPtr<class UAnimMontage> ComboActionMontage;
 
@@ -91,6 +90,8 @@ public:
 	virtual UBehaviorTree* GetBehaviorTree() const override { return CurrentStats.BTAsset; }
 	virtual FCharacterStats GetCharacterStats() const override { return CurrentStats; }
 
+	void NPCMeshLoadCompleted();
+
 protected:
 	bool bIsFleeing = false;
 
@@ -110,4 +111,6 @@ protected:
 	FAICharacterAttackFinished OnAttackFinished;
 
 	void NotifyComboActionEnd();
+
+	TSharedPtr<FStreamableHandle> NPCMeshHandle;
 };

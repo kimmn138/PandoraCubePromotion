@@ -6,15 +6,10 @@
 #include "Animation/AnimMontage.h"
 #include "PCComboActionData.h"
 #include "Game/PCGameInstance.h"
+#include "Engine/AssetManager.h"
 
 APCCommonZombieCharacter::APCCommonZombieCharacter()
 {
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Zombie/Mesh/SK_Zombie.SK_Zombie'"));
-	if (CharacterMeshRef.Object)
-	{
-		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	}
-
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_CommonZombieAnimationBlueprint.ABP_CommonZombieAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
@@ -92,4 +87,13 @@ void APCCommonZombieCharacter::BeginPlay()
 			Stat->SetCurrentHp(CurrentStats.MaxHp);
 		}
 	}
+}
+
+void APCCommonZombieCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	FSoftObjectPath MeshPath(TEXT("/Game/Zombie/Mesh/SK_Zombie.SK_Zombie"));
+
+	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(MeshPath, FStreamableDelegate::CreateUObject(this, &APCEnemyCharacterBase::NPCMeshLoadCompleted));
 }

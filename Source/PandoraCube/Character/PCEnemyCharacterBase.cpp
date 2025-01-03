@@ -26,6 +26,8 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetCapsuleComponent()->SetSimulatePhysics(false);
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
@@ -39,7 +41,9 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("BlockAll"));
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMesh()->SetHiddenInGame(true);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 	AudioComponent->SetupAttachment(RootComponent);
@@ -112,14 +116,6 @@ void APCEnemyCharacterBase::SetImmediateChase(bool bChase)
 	}
 }
 
-void APCEnemyCharacterBase::Attack()
-{
-	if (!bIsDead)
-	{
-		ProcessComboCommand();
-	}
-}
-
 void APCEnemyCharacterBase::ProcessComboCommand()
 {
 	if (bIsDead) return;
@@ -148,9 +144,8 @@ void APCEnemyCharacterBase::ComboActionBegin()
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
-	const float AttackSpeedRate = 1.0f;
+	const float AttackSpeedRate = CurrentStats.AttackRate;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
 	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
 
 	FOnMontageEnded EndDelegate;
@@ -165,73 +160,40 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 {
 	if (bIsDead) return;
 
-	if (TargetMontage == nullptr)
-	{
-		return;
-	}
-
 	ensure(CurrentCombo != 0);
 	CurrentCombo = 0;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
-	HasNextComboCommand = false;  
 	NotifyComboActionEnd();
 }
 
 void APCEnemyCharacterBase::SetComboCheckTimer()
 {
-	if (bIsDead) return;
-
 	int32 ComboIndex = CurrentCombo - 1;
 	ensure(ComboActionData->EffectiveFrameCount.IsValidIndex(ComboIndex));
 
 	const float AttackSpeedRate = CurrentStats.AttackRate;
-	float MontageLength = ComboActionMontage->GetPlayLength();
-	float ComboEffectiveTime = MontageLength / AttackSpeedRate;
-
+	float ComboEffectiveTime = (ComboActionData->EffectiveFrameCount[ComboIndex] / ComboActionData->FrameRate) / AttackSpeedRate;
 	if (ComboEffectiveTime > 0.0f)
 	{
-		GetWorld()->GetTimerManager().SetTimer(
-			ComboTimerHandle,
-			this,
-			&APCEnemyCharacterBase::ComboCheck,
-			ComboEffectiveTime,
-			false
-		);
+		GetWorld()->GetTimerManager().SetTimer(ComboTimerHandle, this, &APCEnemyCharacterBase::ComboCheck, ComboEffectiveTime, false);
 	}
 }
 
 void APCEnemyCharacterBase::ComboCheck()
 {
-	if (bIsDead) return;
-
 	ComboTimerHandle.Invalidate();
-
 	if (HasNextComboCommand)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-		if (!AnimInstance || !AnimInstance->Montage_IsPlaying(ComboActionMontage))
-		{
-			ComboActionEnd(ComboActionMontage, false);  
-			return;
-		}
-
-		if (CurrentCombo >= ComboActionData->MaxComboCount)
-		{
-			ComboActionEnd(ComboActionMontage, true);  
-			return;
-		}
 
 		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
 		FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionData->MontageSectionNamePrefix, CurrentCombo);
 		AnimInstance->Montage_JumpToSection(NextSection, ComboActionMontage);
 		SetComboCheckTimer();
-
 		HasNextComboCommand = false;
 	}
 }
-
 
 void APCEnemyCharacterBase::AttackHitCheck()
 {
@@ -265,9 +227,7 @@ void APCEnemyCharacterBase::AttackHitCheck()
 		{
 			FDamageEvent DamageEvent;
 			HitActor->TakeDamage(AttackDamage, DamageEvent, GetController(), this);
-
 			HasNextComboCommand = true;
-			return; 
 		}
 	}
 }
@@ -307,10 +267,6 @@ void APCEnemyCharacterBase::SetDead()
 	{
 		AIController->BrainComponent->StopLogic(TEXT("Character is Dead"));
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SetDead: AIController or BrainComponent is nullptr!"));
-	}
 
 	OnZombieDeath.Broadcast();
 
@@ -345,6 +301,21 @@ void APCEnemyCharacterBase::PlayHitAnimation()
 
 	//AnimInstance->StopAllMontages(0.0f);
 	AnimInstance->Montage_Play(HitMontage, 1.0f);
+}
+
+void APCEnemyCharacterBase::NPCMeshLoadCompleted()
+{
+	if (NPCMeshHandle.IsValid())
+	{
+		USkeletalMesh* NPCMesh = Cast<USkeletalMesh>(NPCMeshHandle->GetLoadedAsset());
+		if (NPCMesh)
+		{
+			GetMesh()->SetSkeletalMesh(NPCMesh);
+			GetMesh()->SetHiddenInGame(false);
+		}
+	}
+
+	NPCMeshHandle->ReleaseHandle();
 }
 
 float APCEnemyCharacterBase::GetAIPatrolRadius()

@@ -9,15 +9,11 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AI/PCAI.h"
 #include "Game/PCGameInstance.h"
+#include "Engine/AssetManager.h"
+
 
 APCCardBoardZombieCharacter::APCCardBoardZombieCharacter()
 {
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard'"));
-	if (CharacterMeshRef.Object)
-	{
-		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	}
-
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_CardBoardZombieAnimationBlueprint.ABP_CardBoardZombieAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
@@ -95,6 +91,16 @@ void APCCardBoardZombieCharacter::BeginPlay()
 			Stat->SetCurrentHp(CurrentStats.MaxHp);
 		}
 	}
+}
+
+void APCCardBoardZombieCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	FSoftObjectPath MeshPath(TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Cardboard.SK_CharM_Cardboard"));
+
+
+	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(MeshPath, FStreamableDelegate::CreateUObject(this, &APCEnemyCharacterBase::NPCMeshLoadCompleted));
 }
 
 float APCCardBoardZombieCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

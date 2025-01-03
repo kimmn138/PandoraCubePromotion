@@ -6,15 +6,12 @@
 #include "Animation/AnimMontage.h"
 #include "PCComboActionData.h"
 #include "Game/PCGameInstance.h"
+#include "PCPlayerCharacter.h"
+#include "Engine/DamageEvents.h"
+#include "Engine/AssetManager.h"
 
 APCDogZombieCharacter::APCDogZombieCharacter()
 {
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/DogZombie/Meshes/SK_DogZombie.SK_DogZombie'"));
-	if (CharacterMeshRef.Object)
-	{
-		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	}
-
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_DogZombieAnimationBlueprint.ABP_DogZombieAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
@@ -92,4 +89,13 @@ void APCDogZombieCharacter::BeginPlay()
 			Stat->SetCurrentHp(CurrentStats.MaxHp);
 		}
 	}
+}
+
+void APCDogZombieCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	FSoftObjectPath MeshPath(TEXT("/Game/DogZombie/Meshes/SK_DogZombie.SK_DogZombie"));
+
+	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(MeshPath, FStreamableDelegate::CreateUObject(this, &APCEnemyCharacterBase::NPCMeshLoadCompleted));
 }
