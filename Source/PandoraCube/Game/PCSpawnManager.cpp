@@ -67,7 +67,7 @@ void APCSpawnManager::SpawnZombiesInWave()
         return;
     }
 
-    if (!ZombieClass)
+    if (ZombieClasses.Num() == 0)
     {
         return;
     }
@@ -121,7 +121,7 @@ int32 APCSpawnManager::GetSpawnCountBasedOnDifficulty(EDifficultyLevel Difficult
 
 void APCSpawnManager::SpawnZombie()
 {
-    if (SpawnCount <= 0 || ActiveSpawnLocations.Num() == 0)
+    if (SpawnCount <= 0 || ActiveSpawnLocations.Num() == 0 || ZombieClasses.Num() == 0)
     {
         GetWorldTimerManager().ClearTimer(ZombieSpawnTimerHandle);
         return;
@@ -143,8 +143,13 @@ void APCSpawnManager::SpawnZombie()
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
         SpawnParams.bNoFail = true;
 
-        APCCommonZombieCharacter* SpawnedZombie = GetWorld()->SpawnActor<APCCommonZombieCharacter>(
-            ZombieClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+        TSubclassOf<APCEnemyCharacterBase> SelectedZombieClass = GetRandomZombieClassByDifficulty(CurrentDifficulty);
+        if (!SelectedZombieClass)
+        {
+            return;
+        }
+
+        APCEnemyCharacterBase* SpawnedZombie = GetWorld()->SpawnActor<APCEnemyCharacterBase>(SelectedZombieClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 
         if (SpawnedZombie)
         {
@@ -200,4 +205,47 @@ void APCSpawnManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
         Instance->RemoveFromRoot();
         Instance = nullptr;
     }
+}
+
+TSubclassOf<APCEnemyCharacterBase> APCSpawnManager::GetRandomZombieClassByDifficulty(EDifficultyLevel Difficulty)
+{
+    if (ZombieClasses.Num() < 3)
+    {
+        return nullptr;
+    }
+
+    TArray<int32> ProbabilityRanges;
+
+    switch (Difficulty)
+    {
+    case EDifficultyLevel::EASY:
+        ProbabilityRanges = { 12, 18, 20 }; 
+        break;
+    case EDifficultyLevel::NORMAL:
+        ProbabilityRanges = { 10, 17, 20 }; 
+        break;
+    case EDifficultyLevel::HARD:
+        ProbabilityRanges = { 8, 15, 20 };
+        break;
+    default:
+        ProbabilityRanges = { 12, 18, 20 }; 
+        break;
+    }
+
+    int32 RandomValue = FMath::RandRange(1, 20);
+    
+    if (RandomValue <= ProbabilityRanges[0])
+    {
+        return ZombieClasses[0]; 
+    }
+    else if (RandomValue <= ProbabilityRanges[1])
+    {
+        return ZombieClasses[1]; 
+    }
+    else if (RandomValue <= ProbabilityRanges[2])
+    {
+        return ZombieClasses[2];
+    }
+
+    return ZombieClasses[0];
 }

@@ -14,13 +14,13 @@ struct FSpawnData
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 EasySpawnCount = 10;
+    int32 EasySpawnCount = 20;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 MediumSpawnCount = 15;
+    int32 MediumSpawnCount = 30;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
-    int32 HardSpawnCount = 20;
+    int32 HardSpawnCount = 40;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllZombiesDead);
@@ -51,8 +51,10 @@ protected:
     TArray<AActor*> ActiveSpawnLocations;
     TMap<AActor*, TArray<AActor*>> TriggerZoneToSpawnLocationsMap;
 
-    UPROPERTY(EditAnywhere, Category = "Spawn")
-    TSubclassOf<class APCCommonZombieCharacter> ZombieClass;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Zombie Spawning")
+    TArray<TSubclassOf<APCEnemyCharacterBase>> ZombieClasses;
+
+    TSubclassOf<APCEnemyCharacterBase> GetRandomZombieClassByDifficulty(EDifficultyLevel Difficulty);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Data")
     FSpawnData SpawnData;

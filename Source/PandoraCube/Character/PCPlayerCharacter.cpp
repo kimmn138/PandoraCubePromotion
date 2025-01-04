@@ -42,7 +42,7 @@ APCPlayerCharacter::APCPlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 540.0f);
 	GetCharacterMovement()->JumpZVelocity = 350.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 100.f;
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->bIgnoreBaseRotation = true;
@@ -501,6 +501,12 @@ void APCPlayerCharacter::ReduceBullet()
 {
 	InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets -= 1;
 	InventoryComponent->SetCurrentAmmo(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);
+
+	if (InventoryComponent->Inventory[CurrentItemSelection].ItemType == EItemType::Secondary && InventoryComponent->Inventory[CurrentItemSelection].TotalBullets <= 0 && InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets <= 0)
+	{
+		InventoryComponent->Inventory[CurrentItemSelection].TotalBullets = 90;
+		InventoryComponent->SetMaxAmmo(InventoryComponent->Inventory[CurrentItemSelection].TotalBullets);
+	}
 }
 
 bool APCPlayerCharacter::BulletsLeft()
@@ -575,7 +581,7 @@ void APCPlayerCharacter::Sprint()
 
 void APCPlayerCharacter::StopSprinting()
 {
-	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 	bCanAim = 1;
 }
 
@@ -746,14 +752,14 @@ void APCPlayerCharacter::StopFiring()
 
 void APCPlayerCharacter::Aiming()
 {
-	if (bCanAim)
+	if (bCanAim && WeaponType != EWeaponType::IT_Hand)
 	{
 		bIsAiming = 1;
 		if (AimCurve)
 		{
 			AimTimeline->Play();
 		}
-		FollowCamera->SetFieldOfView(80.0f);
+		FollowCamera->SetFieldOfView(50.0f);
 
 		if (PlayerMainWidget)
 		{
@@ -1118,7 +1124,7 @@ void APCPlayerCharacter::ShotgunShootRay()
 	float SpreadAngle = CurrentStats.ShoutgunSpreadAngle;
 	if (bIsAiming)
 	{
-		SpreadAngle /= 2.0f;
+		SpreadAngle /= 3.0f;
 	}
 
 	FVector Start = FollowCamera->GetComponentLocation();
