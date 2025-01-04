@@ -35,7 +35,7 @@ void APCClearZone::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 			GameInstance->SetElapsedTime(GameMode->GetElapsedTime());
 		}
 
-		UGameplayStatics::OpenLevel(this, FName("VictoryScreen"));
+		UGameplayStatics::OpenLevel(GetWorld(), FName("VictoryScreen"), true);
 	}
 }
 

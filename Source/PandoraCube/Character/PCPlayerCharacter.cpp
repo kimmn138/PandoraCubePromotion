@@ -414,14 +414,14 @@ void APCPlayerCharacter::SetDead()
 		GetMesh()->GetAnimInstance()->StopAllMontages(0.0f);
 	}
 
-	if (GetWorld())
+	if (UWorld* World = GetWorld())
 	{
-		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+		World->GetTimerManager().ClearAllTimersForObject(this);
 	}
 
 	Destroy();
 
-	UGameplayStatics::OpenLevel(this, FName("GameOverScreen"));
+	UGameplayStatics::OpenLevel(GetWorld(), FName("GameOverScreen"), true);
 }
 
 void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

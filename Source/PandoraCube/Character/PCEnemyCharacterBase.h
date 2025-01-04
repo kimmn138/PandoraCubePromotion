@@ -26,6 +26,8 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
+
 	void TakeKnockBack(const FVector& HitLocation, const FVector& ImpactDirection, float Force);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior")
@@ -35,6 +37,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Zombie")
 	FOnZombieDeath OnZombieDeath;
+
+	UPROPERTY()
+	FTimerHandle DeadTimerHandle;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation)
@@ -51,6 +56,8 @@ protected:
 	void ComboCheck();
 
 	int32 CurrentCombo = 0;
+
+	UPROPERTY()
 	FTimerHandle ComboTimerHandle;
 	bool HasNextComboCommand = false;
 	bool bIsDead = false;

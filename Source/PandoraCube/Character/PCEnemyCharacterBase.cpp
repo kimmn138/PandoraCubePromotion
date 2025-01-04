@@ -68,20 +68,34 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 
 void APCEnemyCharacterBase::BeginDestroy()
 {
-	if (GetMesh())
-	{
-		if (GetMesh()->GetAnimInstance())
-		{
-			GetMesh()->GetAnimInstance()->StopAllMontages(0.0f);
-		}
-	}
+	Super::BeginDestroy();
 
 	if (GetWorld())
 	{
-		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+
+		if (TimerManager.IsTimerActive(ComboTimerHandle))
+		{
+			TimerManager.ClearTimer(ComboTimerHandle);
+			ComboTimerHandle.Invalidate();
+		}
+
+		if (TimerManager.IsTimerActive(DeadTimerHandle))
+		{
+			TimerManager.ClearTimer(DeadTimerHandle);
+			DeadTimerHandle.Invalidate();
+		}
+
+		TimerManager.ClearAllTimersForObject(this);
 	}
 
-	Super::BeginDestroy();
+	OnZombieDeath.RemoveAll(this);
+
+	if (GetMesh())
+	{
+		GetMesh()->SetAnimInstanceClass(nullptr);
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	}
 }
 
 void APCEnemyCharacterBase::PostInitializeComponents()
@@ -97,6 +111,46 @@ void APCEnemyCharacterBase::PostInitializeComponents()
 		GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
 		GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
 		GetCapsuleComponent()->SetSimulatePhysics(false);
+	}
+}
+
+void APCEnemyCharacterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	bIsDead = true;
+
+	if (GetWorld())
+	{
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+
+		if (TimerManager.IsTimerActive(ComboTimerHandle))
+		{
+			TimerManager.ClearTimer(ComboTimerHandle);
+			ComboTimerHandle.Invalidate();
+		}
+
+		if (TimerManager.IsTimerActive(DeadTimerHandle))
+		{
+			TimerManager.ClearTimer(DeadTimerHandle);
+			DeadTimerHandle.Invalidate();
+		}
+
+		TimerManager.ClearAllTimersForObject(this);
+	}
+
+	if (OnZombieDeath.IsBound())
+	{
+		OnZombieDeath.RemoveAll(this);
+	}
+
+	if (GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->OnMontageEnded.Clear();
+		AnimInstance->OnMontageBlendingOut.Clear();
+		GetMesh()->SetAnimInstanceClass(nullptr);
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	}
 }
 
@@ -172,9 +226,16 @@ void APCEnemyCharacterBase::ComboActionEnd(UAnimMontage* TargetMontage, bool IsP
 {
 	if (bIsDead) return;
 
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ComboTimerHandle);
+	}
+
 	ensure(CurrentCombo != 0);
 	CurrentCombo = 0;
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	HasNextComboCommand = false;
 
 	NotifyComboActionEnd();
 }
@@ -194,16 +255,24 @@ void APCEnemyCharacterBase::SetComboCheckTimer()
 
 void APCEnemyCharacterBase::ComboCheck()
 {
+	if (!IsValid(this) || !GetWorld())
+	{
+		return;
+	}
+
 	ComboTimerHandle.Invalidate();
+
 	if (HasNextComboCommand)
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (!AnimInstance || !AnimInstance->Montage_IsPlaying(ComboActionMontage))
+		{
+			return;
+		}
 
 		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
 		FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionData->MontageSectionNamePrefix, CurrentCombo);
 		AnimInstance->Montage_JumpToSection(NextSection, ComboActionMontage);
-		SetComboCheckTimer();
-		HasNextComboCommand = false;
 	}
 }
 
@@ -282,21 +351,27 @@ void APCEnemyCharacterBase::SetDead()
 
 	OnZombieDeath.Broadcast();
 
-	FTimerHandle DeadTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, FTimerDelegate::CreateLambda(
-		[&]()
-		{
-			if (OnZombieDeath.IsBound())
-			{
-				OnZombieDeath.RemoveAll(this);
-			}
+	TWeakObjectPtr<APCEnemyCharacterBase> WeakThis(this);
 
-			if (IsValid(this))
+	GetWorld()->GetTimerManager().SetTimer(
+		DeadTimerHandle,
+		FTimerDelegate::CreateLambda([WeakThis]()
 			{
-				Destroy();
-			}
-		}
-	), DeadEventDelayTime, false);
+				if (!WeakThis.IsValid()) {
+					return;
+				}
+
+				if (WeakThis->OnZombieDeath.IsBound()) {
+					WeakThis->OnZombieDeath.RemoveAll(WeakThis.Get());
+				}
+
+				if (WeakThis.IsValid()) {
+					WeakThis->Destroy();
+				}
+			}),
+		DeadEventDelayTime,
+		false
+	);
 }
 
 void APCEnemyCharacterBase::PlayDeadAnimation()
