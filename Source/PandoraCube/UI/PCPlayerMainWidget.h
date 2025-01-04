@@ -28,6 +28,9 @@ public:
 	void UpdateCurrentAmmoText(float NewCurrentAmmo);
 	void UpdateMaxAmmoText(float NewMaxAmmo);
 
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetImageVisibility(bool bIsVisible);
+
 protected:
 	UPROPERTY()
 	TObjectPtr<class UTextBlock> HpText;
@@ -49,4 +52,7 @@ protected:
 
 	UPROPERTY()
 	int32 CurrentAmmo;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> AimImage;
 };

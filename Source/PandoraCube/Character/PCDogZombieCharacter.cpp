@@ -9,6 +9,7 @@
 #include "PCPlayerCharacter.h"
 #include "Engine/DamageEvents.h"
 #include "Engine/AssetManager.h"
+#include "Components/CapsuleComponent.h"
 
 APCDogZombieCharacter::APCDogZombieCharacter()
 {
@@ -59,6 +60,13 @@ APCDogZombieCharacter::APCDogZombieCharacter()
 			CurrentStats.ZombieSound = Row->ZombieSound;
 		}
 	}
+
+	bHasDealtDamage = false;
+
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APCDogZombieCharacter::OnOverlapBegin);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &APCDogZombieCharacter::OnOverlapEnd);
+
+	GetMesh()->SetRelativeLocationAndRotation(FVector(-33.718998, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 }
 
 void APCDogZombieCharacter::BeginPlay()
@@ -98,4 +106,25 @@ void APCDogZombieCharacter::PostInitializeComponents()
 	FSoftObjectPath MeshPath(TEXT("/Game/DogZombie/Meshes/SK_DogZombie.SK_DogZombie"));
 
 	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(MeshPath, FStreamableDelegate::CreateUObject(this, &APCEnemyCharacterBase::NPCMeshLoadCompleted));
+}
+
+void APCDogZombieCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (bHasDealtDamage) return;
+
+	if (OtherActor && OtherActor->IsA(APCPlayerCharacter::StaticClass()))
+	{
+		FDamageEvent DamageEvent;
+		OtherActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
+
+		bHasDealtDamage = true;
+	}
+}
+
+void APCDogZombieCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor && OtherActor->IsA(APCPlayerCharacter::StaticClass()))
+	{
+		bHasDealtDamage = false;
+	}
 }

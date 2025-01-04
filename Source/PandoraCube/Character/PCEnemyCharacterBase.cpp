@@ -26,23 +26,26 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCapsuleComponent()->SetSimulatePhysics(false);
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-	GetCharacterMovement()->JumpZVelocity = 700.f;
-	GetCharacterMovement()->AirControl = 0.35f;
+	GetCharacterMovement()->JumpZVelocity = 0.f;
+	GetCharacterMovement()->AirControl = 0.0f;
 	GetCharacterMovement()->MaxWalkSpeed = CurrentStats.Speed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	GetCharacterMovement()->GravityScale = 5.0f; 
-	GetCharacterMovement()->bMaintainHorizontalGroundVelocity = true;
+	GetCharacterMovement()->BrakingDecelerationWalking = 1500.f;
+	GetCharacterMovement()->GravityScale = 1.0f; 
+	GetCharacterMovement()->bMaintainHorizontalGroundVelocity = false;
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+	GetMesh()->SetCollisionProfileName(TEXT("Custom"));
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	GetMesh()->SetHiddenInGame(true);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
@@ -86,6 +89,15 @@ void APCEnemyCharacterBase::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	Stat->OnHpZero.AddUObject(this, &APCEnemyCharacterBase::SetDead);
+	if (GetCapsuleComponent())
+	{
+		GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 1000.0f);
+		GetCapsuleComponent()->SetLinearDamping(5.0f);
+		GetCapsuleComponent()->SetAngularDamping(5.0f);
+		GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
+		GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
+		GetCapsuleComponent()->SetSimulatePhysics(false);
+	}
 }
 
 void APCEnemyCharacterBase::TakeKnockBack(const FVector& HitLocation, const FVector& ImpactDirection, float Force)

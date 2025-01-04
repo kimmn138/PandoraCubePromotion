@@ -292,9 +292,11 @@ void APCPlayerCharacter::PostInitializeComponents()
 
 	if (GetCapsuleComponent())
 	{
-		GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 100000.0f);
-		GetCapsuleComponent()->SetLinearDamping(50.0f);
-		GetCapsuleComponent()->SetAngularDamping(50.0f);
+		GetCapsuleComponent()->SetMassOverrideInKg(NAME_None, 1000.0f);
+		GetCapsuleComponent()->SetLinearDamping(5.0f);
+		GetCapsuleComponent()->SetAngularDamping(5.0f);
+		GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
+		GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
 		GetCapsuleComponent()->SetSimulatePhysics(false);
 	}
 }
@@ -378,16 +380,6 @@ void APCPlayerCharacter::BeginPlay()
 void APCPlayerCharacter::BeginDestroy()
 {
 	Super::BeginDestroy();
-}
-
-void APCPlayerCharacter::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
-{
-	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-
-	if (Other && Other->IsA(APCEnemyCharacterBase::StaticClass()))
-	{
-		//GetCharacterMovement()->Velocity = FVector::OneVector * 20.0f;
-	}
 }
 
 float APCPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -762,6 +754,11 @@ void APCPlayerCharacter::Aiming()
 			AimTimeline->Play();
 		}
 		FollowCamera->SetFieldOfView(80.0f);
+
+		if (PlayerMainWidget)
+		{
+			PlayerMainWidget->SetImageVisibility(false);
+		}
 	}
 }
 
@@ -772,6 +769,11 @@ void APCPlayerCharacter::StopAiming()
 	{
 		AimTimeline->Reverse();
 		FollowCamera->SetFieldOfView(90.0f);
+
+		if (PlayerMainWidget)
+		{
+			PlayerMainWidget->SetImageVisibility(true);
+		}
 	}
 }
 

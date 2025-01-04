@@ -4,6 +4,7 @@
 #include "PCPlayerMainWidget.h"
 #include "UI/PCPlayerMainWidget.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 
 UPCPlayerMainWidget::UPCPlayerMainWidget(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -78,5 +79,13 @@ void UPCPlayerMainWidget::UpdateMaxAmmoText(float NewMaxAmmo)
 		FText MaxAmmoTextValue = FText::AsNumber(MaxAmmoInt);
 
 		MaxAmmoTextInt->SetText(MaxAmmoTextValue);
+	}
+}
+
+void UPCPlayerMainWidget::SetImageVisibility(bool bIsVisible)
+{
+	if (AimImage)
+	{
+		AimImage->SetVisibility(bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }
