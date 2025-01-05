@@ -28,6 +28,7 @@
 #include "Game/PCGameMode.h"
 #include "Game/PCGameInstance.h"
 #include "Engine/DataTable.h"
+#include "Components/AudioComponent.h"
 
 APCPlayerCharacter::APCPlayerCharacter()
 {
@@ -69,6 +70,10 @@ APCPlayerCharacter::APCPlayerCharacter()
 	InventoryComponent = CreateDefaultSubobject<UPCInventoryComponent>(TEXT("Inventory"));
 
 	Stat = CreateDefaultSubobject<UPCCharacterStatComponent>(TEXT("Stat"));
+
+	ReloadAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("ReloadAudioComponent"));
+	ReloadAudioComponent->bAutoActivate = false;
+	ReloadAudioComponent->SetupAttachment(RootComponent);
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
 	if (CharacterMeshRef.Object)
@@ -785,6 +790,11 @@ void APCPlayerCharacter::StopAiming()
 
 void APCPlayerCharacter::ChangeInven1()
 {
+	if (bisReloading)
+	{
+		CancelReload();
+	}
+
 	if (InventoryComponent->Inventory[0].ID != -1)
 	{
 		CurrentItemSelection = 0;
@@ -794,6 +804,11 @@ void APCPlayerCharacter::ChangeInven1()
 
 void APCPlayerCharacter::ChangeInven2()
 {
+	if (bisReloading)
+	{
+		CancelReload();
+	}
+
 	if (InventoryComponent->Inventory[1].ID != -1)
 	{
 		CurrentItemSelection = 1;
@@ -803,7 +818,7 @@ void APCPlayerCharacter::ChangeInven2()
 
 void APCPlayerCharacter::Reload()
 {
-	if (InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets < CurrentStats.MagSize && InventoryComponent->Inventory[CurrentItemSelection].TotalBullets > 0)
+	if (InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets < CurrentStats.MagSize && InventoryComponent->Inventory[CurrentItemSelection].TotalBullets > 0 && !bisReloading)
 	{
 		if (bIsAiming)
 		{
@@ -813,23 +828,48 @@ void APCPlayerCharacter::Reload()
 		bCanAim = 0;
 		bCanFire = 0;
 		bStopLeftHandIK = 1;
+		bisReloading = true;
 
 		AnimInstanceRef->Montage_Play(CurrentReloadAnimation, 1.0f);
 
-		if ((WeaponType == EWeaponType::IT_Rifle || WeaponType == EWeaponType::IT_Pistol || WeaponType == EWeaponType::IT_SMG) && !bisReloading)
+		if (ReloadAudioComponent)
 		{
-			UGameplayStatics::PlaySoundAtLocation(this, RifleReloadSound, GetActorLocation());
-			bisReloading = true;
-		}
-		else if (WeaponType == EWeaponType::IT_Shotgun && !bisReloading)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, ShotgunReloadSound, GetActorLocation());
-			bisReloading = true;
+			if (WeaponType == EWeaponType::IT_Rifle || WeaponType == EWeaponType::IT_Pistol || WeaponType == EWeaponType::IT_SMG)
+			{
+				ReloadAudioComponent->SetSound(RifleReloadSound);
+			}
+			else if (WeaponType == EWeaponType::IT_Shotgun)
+			{
+				ReloadAudioComponent->SetSound(ShotgunReloadSound);
+			}
+			ReloadAudioComponent->Play();
 		}
 
-		FTimerHandle ReloadTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &APCPlayerCharacter::CompleteReload, CurrentStats.ReloadTime, false);
 	}
+}
+
+void APCPlayerCharacter::CancelReload()
+{
+	if (GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+	}
+
+	if (AnimInstanceRef && AnimInstanceRef->IsAnyMontagePlaying())
+	{
+		AnimInstanceRef->Montage_Stop(0.25f, CurrentReloadAnimation);
+	}
+
+	if (ReloadAudioComponent && ReloadAudioComponent->IsPlaying())
+	{
+		ReloadAudioComponent->Stop();
+	}
+
+	bCanAim = true;
+	bCanFire = true;
+	bStopLeftHandIK = 0;
+	bisReloading = false;
 }
 
 void APCPlayerCharacter::DropItem()

@@ -34,7 +34,7 @@ void APCPickUpShotgun::BeginPlay()
 		{
 			Item.ID = 4;
 			Item.CurrentBullets = Row->Stats.MagSize;
-			Item.TotalBullets = Row->Stats.MagSize * 5;
+			Item.TotalBullets = Row->Stats.MagSize * 6;
 			Item.ItemType = EItemType::Primary;
 		}
 	}

@@ -101,6 +101,8 @@ protected:
 
 	FTimerHandle FireDelayHandle;
 
+	FTimerHandle ReloadTimerHandle;
+
 	void ReduceBullet();
 
 	bool BulletsLeft();
@@ -180,12 +182,16 @@ protected:
 	void ChangeInven1();
 	void ChangeInven2();
 	void Reload();
+	void CancelReload();
 	void DropItem();
 	void LeanLeftPressed();
 	void LeanLeftReleased();
 	void LeanRightPressed();
 	void LeanRightReleased();
 	void Pause();
+
+	UPROPERTY()
+	TObjectPtr<class UAudioComponent> ReloadAudioComponent;
 
 	UFUNCTION()
 	void CompleteReload();
