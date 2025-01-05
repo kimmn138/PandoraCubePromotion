@@ -29,7 +29,10 @@ public:
 	void UpdateMaxAmmoText(float NewMaxAmmo);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetImageVisibility(bool bIsVisible);
+	void SetAimImageVisibility(bool bIsVisible);
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetDamageOverlayImageVisibility(bool bIsVisible);
 
 protected:
 	UPROPERTY()
@@ -55,4 +58,7 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> AimImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UImage> DamageOverlayImage;
 };

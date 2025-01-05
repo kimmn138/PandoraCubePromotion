@@ -337,7 +337,7 @@ void APCPlayerCharacter::BeginPlay()
 		PlayerMainWidget = CreateWidget<UPCPlayerMainWidget>(GetWorld(), PlayerMainWidgetClass);
 		if (PlayerMainWidget)
 		{
-			PlayerMainWidget->AddToViewport();
+			PlayerMainWidget->AddToViewport(999);
 			SetupCharacterWidget();
 		}
 	}
@@ -393,6 +393,8 @@ float APCPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 	UGameplayStatics::PlaySoundAtLocation(this, PlayerHitSound, GetActorLocation());
 	Stat->ApplyDamage(DamageAmount);
+
+	ShowDamageOverlay();
 
 	return DamageAmount;
 }
@@ -624,7 +626,7 @@ void APCPlayerCharacter::Fire()
 							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
 							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
 
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator(), FVector(0.2f, 0.2f, 0.2f), true);
 						}
 					}
 
@@ -660,7 +662,7 @@ void APCPlayerCharacter::Fire()
 							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
 							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
 
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator(), FVector(0.2f, 0.2f, 0.2f), true);
 						}
 					}
 
@@ -693,7 +695,7 @@ void APCPlayerCharacter::Fire()
 							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
 							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
 
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator(), FVector(0.2f, 0.2f, 0.2f), true);
 						}
 					}
 
@@ -726,7 +728,7 @@ void APCPlayerCharacter::Fire()
 							USkeletalMeshComponent* WeaponMesh = EquippedWeapon->FindComponentByClass<USkeletalMeshComponent>();
 							FTransform SocketTransform = WeaponMesh->GetSocketTransform(TEXT("MuzzleFlash"), RTS_World);
 
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator());
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMuzzleFlash, SocketTransform.GetLocation(), SocketTransform.GetRotation().Rotator(), FVector(0.2f, 0.2f, 0.2f), true);
 						}
 					}
 
@@ -768,7 +770,7 @@ void APCPlayerCharacter::Aiming()
 
 		if (PlayerMainWidget)
 		{
-			PlayerMainWidget->SetImageVisibility(false);
+			PlayerMainWidget->SetAimImageVisibility(false);
 		}
 	}
 }
@@ -783,7 +785,7 @@ void APCPlayerCharacter::StopAiming()
 
 		if (PlayerMainWidget)
 		{
-			PlayerMainWidget->SetImageVisibility(true);
+			PlayerMainWidget->SetAimImageVisibility(true);
 		}
 	}
 }
@@ -882,11 +884,16 @@ void APCPlayerCharacter::DropItem()
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 			FTransform DropTransform;
-			DropTransform.SetLocation(FollowCamera->GetForwardVector() * 200 + FollowCamera->GetComponentLocation());
+			DropTransform.SetLocation(FollowCamera->GetForwardVector() * 170 + FollowCamera->GetComponentLocation());
 			APCPickUpBase* SpawnedPickup = GetWorld()->SpawnActor<APCPickUpBase>(CurrentWeaponPickupClass, DropTransform, SpawnParams);
 
 			if (SpawnedPickup)
 			{
+				if (bisReloading)
+				{
+					CancelReload();
+				}
+
 				SpawnedPickup->Item = InventoryComponent->Inventory[CurrentItemSelection];
 				InventoryComponent->Inventory[CurrentItemSelection] = FDynamicInventoryItem();
 				InventoryComponent->Inventory[CurrentItemSelection].ID = -1;
@@ -1060,7 +1067,7 @@ void APCPlayerCharacter::ShootRay()
 
 				if (Tag == "Metal")
 				{
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 					UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
 					AActor* NewMetalBulletHole = GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
 					bParticleSpawned = true;
@@ -1080,7 +1087,7 @@ void APCPlayerCharacter::ShootRay()
 
 						if (HitResult.BoneName == "jaw_01")
 						{
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 							UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
 							AActor* NewMetalBulletHole = GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
 							bParticleSpawned = true;
@@ -1088,7 +1095,7 @@ void APCPlayerCharacter::ShootRay()
 						}
 						else if (HitResult.BoneName == "head")
 						{
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 							UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 							bParticleSpawned = true;
 							HitActor->TakeDamage(CurrentStats.Damage * 2, DamageEvent, GetController(), this);
@@ -1096,7 +1103,7 @@ void APCPlayerCharacter::ShootRay()
 						}
 						else
 						{
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 							UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 							bParticleSpawned = true;
 							HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
@@ -1142,7 +1149,7 @@ void APCPlayerCharacter::ShootRay()
 					FVector ImpactDirection = HitResult.TraceEnd - HitResult.TraceStart;
 					ImpactDirection.Normalize();
 
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 					UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 					bParticleSpawned = true;
 					HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
@@ -1209,7 +1216,7 @@ void APCPlayerCharacter::ShotgunShootRay()
 				{
 					if (Tag == "Metal")
 					{
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 						UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
 						GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
 						bParticleSpawned = true;
@@ -1229,7 +1236,7 @@ void APCPlayerCharacter::ShotgunShootRay()
 
 							if (HitResult.BoneName == "jaw_01")
 							{
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator);
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponMetalParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 								UGameplayStatics::PlaySoundAtLocation(this, MetalHitSound, HitLocation);
 								GetWorld()->SpawnActor<APCBulletHole>(BulletHoleDecal, BulletHoleTransform);
 								bParticleSpawned = true;
@@ -1237,7 +1244,7 @@ void APCPlayerCharacter::ShotgunShootRay()
 							}
 							else if (HitResult.BoneName == "head")
 							{
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 								UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 								bParticleSpawned = true;
 								HitActor->TakeDamage(CurrentStats.Damage / NumPellets * 2, DamageEvent, GetController(), this);
@@ -1245,7 +1252,7 @@ void APCPlayerCharacter::ShotgunShootRay()
 							}
 							else
 							{
-								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 								UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 								bParticleSpawned = true;
 								HitActor->TakeDamage(CurrentStats.Damage / NumPellets, DamageEvent, GetController(), this);
@@ -1291,7 +1298,7 @@ void APCPlayerCharacter::ShotgunShootRay()
 						FVector ImpactDirection = HitResult.TraceEnd - HitResult.TraceStart;
 						ImpactDirection.Normalize();
 
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator);
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponFleshParticle, HitLocation, FRotator::ZeroRotator, FVector(3.0f, 3.0f, 3.0f), true);
 						UGameplayStatics::PlaySoundAtLocation(this, FleshHitSound, HitLocation);
 						bParticleSpawned = true;
 						HitActor->TakeDamage(CurrentStats.Damage, DamageEvent, GetController(), this);
@@ -1368,6 +1375,31 @@ void APCPlayerCharacter::SetupCharacterWidget()
 		PlayerMainWidget->UpdateCurrentAmmoText(InventoryComponent->GetCurrentAmmo());
 		InventoryComponent->OnCurrentAmmoChanged.AddUObject(PlayerMainWidget, &UPCPlayerMainWidget::UpdateCurrentAmmoText);
 		InventoryComponent->OnMaxAmmoChanged.AddUObject(PlayerMainWidget, &UPCPlayerMainWidget::UpdateMaxAmmoText);
+	}
+}
+
+void APCPlayerCharacter::ShowDamageOverlay()
+{
+	if (PlayerMainWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SHOW DAMAGEOVERLAY"));
+		PlayerMainWidget->SetDamageOverlayImageVisibility(true);
+
+		if (GetWorld()->GetTimerManager().IsTimerActive(DamageOverlayTimerHandle))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(DamageOverlayTimerHandle);
+			UE_LOG(LogTemp, Warning, TEXT("DamageOverlay Timer Cleared and Restarted"));
+		}
+
+		GetWorld()->GetTimerManager().SetTimer(DamageOverlayTimerHandle, this, &APCPlayerCharacter::HideDamageOverlay, 0.5f, false);
+	}
+}
+
+void APCPlayerCharacter::HideDamageOverlay()
+{
+	if (PlayerMainWidget)
+	{
+		PlayerMainWidget->SetDamageOverlayImageVisibility(false);
 	}
 }
 

@@ -276,8 +276,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<class UUserWidget> PauseMenuWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UUserWidget> PauseMenuWidget;
+
+	FTimerHandle DamageOverlayTimerHandle;
+
+	void ShowDamageOverlay();
+	void HideDamageOverlay();
 
 // Inventory Section
 protected:

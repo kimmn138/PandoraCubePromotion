@@ -82,10 +82,18 @@ void UPCPlayerMainWidget::UpdateMaxAmmoText(float NewMaxAmmo)
 	}
 }
 
-void UPCPlayerMainWidget::SetImageVisibility(bool bIsVisible)
+void UPCPlayerMainWidget::SetAimImageVisibility(bool bIsVisible)
 {
 	if (AimImage)
 	{
 		AimImage->SetVisibility(bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
+
+void UPCPlayerMainWidget::SetDamageOverlayImageVisibility(bool bIsVisible)
+{
+	if (DamageOverlayImage)
+	{
+		DamageOverlayImage->SetVisibility(bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }
