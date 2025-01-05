@@ -213,6 +213,18 @@ APCPlayerCharacter::APCPlayerCharacter()
 		RifleSound = RifleSoundRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<USoundBase> PistolSoundRef(TEXT("/Script/Engine.SoundCue'/Game/MilitaryWeapSilver/Sound/Pistol/Cues/PistolA_Fire_Cue.PistolA_Fire_Cue'"));
+	if (nullptr != PistolSoundRef.Object)
+	{
+		PistolSound = PistolSoundRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> ShotgunSoundRef(TEXT("/Script/Engine.SoundCue'/Game/MilitaryWeapSilver/Sound/Shotgun/Cues/ShotgunA_Fire_Cue.ShotgunA_Fire_Cue'"));
+	if (nullptr != ShotgunSoundRef.Object)
+	{
+		ShotgunSound = ShotgunSoundRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<USoundBase> MetalHitSoundRef(TEXT("/Script/Engine.SoundCue'/Game/MilitaryWeapSilver/Sound/Shotgun/Cues/Shotgun_ImpactSurface_Cue.Shotgun_ImpactSurface_Cue'"));
 	if (nullptr != MetalHitSoundRef.Object)
 	{
@@ -376,6 +388,13 @@ void APCPlayerCharacter::BeginPlay()
 		AimTimeline->SetTimelineLength(0.25f);
 		AimTimeline->SetLooping(false);
 	}
+
+	UPCGameInstance* GameInstance = Cast<UPCGameInstance>(GetGameInstance());
+	if (GameInstance)
+	{
+		MouseSensitivity = GameInstance->GetMouseSensitivity();
+	}
+
 
 	FTimerHandle CheckWallTimer;
 
@@ -575,8 +594,8 @@ void APCPlayerCharacter::Look(const FInputActionValue& Value)
 	CurrentMouseX = LookAxisVector.X;
 	CurrentMouseY = LookAxisVector.Y;
 
-	AddControllerYawInput(LookAxisVector.X);
-	AddControllerPitchInput(LookAxisVector.Y);
+	AddControllerYawInput(LookAxisVector.X * MouseSensitivity);
+	AddControllerPitchInput(LookAxisVector.Y * MouseSensitivity);
 }
 
 void APCPlayerCharacter::Sprint()
@@ -654,7 +673,7 @@ void APCPlayerCharacter::Fire()
 					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
 					if (bSuccess)
 					{
-						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						UGameplayStatics::PlaySoundAtLocation(this, PistolSound, FollowCamera->GetComponentLocation());
 						ControllerRecoil();
 
 						if (EquippedWeapon)
@@ -687,7 +706,7 @@ void APCPlayerCharacter::Fire()
 					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
 					if (bSuccess)
 					{
-						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						UGameplayStatics::PlaySoundAtLocation(this, ShotgunSound, FollowCamera->GetComponentLocation());
 						ControllerRecoil();
 
 						if (EquippedWeapon)
@@ -1024,6 +1043,11 @@ void APCPlayerCharacter::CheckWallTick()
 	{
 		WallDistance = 1.0f;
 	}
+}
+
+void APCPlayerCharacter::SetMouseSensitivity(float NewSensitivity)
+{
+	MouseSensitivity = NewSensitivity;
 }
 
 void APCPlayerCharacter::ShootRay()

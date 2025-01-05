@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Sound/PCSoundManager.h"
+#include "PCMotionBlurManager.h"
 #include "PCGameInstance.generated.h"
 
 
@@ -30,11 +31,24 @@ public:
     float BGMVolume = 1.0f;
     float SFXVolume = 1.0f;
 
+    float MouseSensitivity = 1.0f;
+
+    bool bIsMotionBlurEnabled = true;
+
     void SaveAudioSettings();
     void LoadAudioSettings();
 
+    void SaveMouseSettings();
+    void LoadMouseSettings();
+
+    void SaveMotionSettings();
+    void LoadMotionSettings();
+
     void SetSoundManager(APCSoundManager* InSoundManager) { SoundManager = InSoundManager; }
     TObjectPtr<class APCSoundManager> GetSoundManager() const { return SoundManager; }
+
+    void SetMotionBlurManager(APCMotionBlurManager* InMotionBlurManager) { MotionBlurManager = InMotionBlurManager; }
+    TObjectPtr<class APCMotionBlurManager> GetMotionBlurManager() const { return MotionBlurManager; }
 
     UFUNCTION(BlueprintCallable, Category = "Game Time")
     void SetElapsedTime(const FString& Time) { ElapsedTime = Time; }
@@ -46,6 +60,9 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void SetDifficulty(EDifficultyLevel NewDifficulty);
+
+    UFUNCTION(BlueprintCallable)
+    float GetMouseSensitivity();
 
     UFUNCTION(BlueprintCallable)
     EDifficultyLevel GetDifficulty();
@@ -64,6 +81,9 @@ public:
 private:
     UPROPERTY()
     TObjectPtr<class APCSoundManager> SoundManager;
+
+    UPROPERTY()
+    TObjectPtr<class APCMotionBlurManager> MotionBlurManager;
 
     UPROPERTY()
     FString ElapsedTime;

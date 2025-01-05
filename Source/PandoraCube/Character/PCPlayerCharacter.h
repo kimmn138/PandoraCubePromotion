@@ -26,6 +26,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void SetMouseSensitivity(float NewSensitivity);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -74,6 +77,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	TObjectPtr<class USoundBase> RifleSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<class USoundBase> PistolSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<class USoundBase> ShotgunSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	TObjectPtr<class USoundBase> MetalHitSound;
@@ -174,6 +183,7 @@ protected:
 	void Sprint();
 	void StopSprinting();
 	void StartFiring();
+
 	UFUNCTION()
 	void Fire();
 	void StopFiring();
@@ -200,6 +210,8 @@ protected:
 	void CheckWallTick();
 
 	float WallDistance;
+
+	float MouseSensitivity = 1.0f;
 
 // Weapon Moving Section
 protected:

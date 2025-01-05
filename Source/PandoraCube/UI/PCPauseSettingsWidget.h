@@ -27,6 +27,12 @@ protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<class USlider> SFXVolumeSlider;
 
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class USlider> MouseSensitivitySlider;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<class UCheckBox> MotionBlurCheckBox;
+
 private:
     UFUNCTION(BlueprintCallable)
     void OnMasterVolumeChanged(float Value);
@@ -36,6 +42,12 @@ private:
 
     UFUNCTION(BlueprintCallable)
     void OnSFXVolumeChanged(float Value);
+
+    UFUNCTION(BlueprintCallable)
+    void OnMouseSensitivityChanged(float Value);
+
+    UFUNCTION(BlueprintCallable)
+    void OnMotionBlurCheckStateChanged(bool bIsChecked);
 
     TObjectPtr<class UPCGameInstance> GameInstance;
 };

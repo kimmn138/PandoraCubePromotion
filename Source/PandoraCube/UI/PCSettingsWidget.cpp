@@ -5,6 +5,7 @@
 #include "Components/Slider.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/PCGameInstance.h"
+#include "Components/CheckBox.h"
 
 void UPCSettingsWidget::NativeOnInitialized()
 {
@@ -29,6 +30,18 @@ void UPCSettingsWidget::NativeOnInitialized()
         {
             SFXVolumeSlider->SetValue(GameInstance->SFXVolume);
             SFXVolumeSlider->OnValueChanged.AddDynamic(this, &UPCSettingsWidget::OnSFXVolumeChanged);
+        }
+
+        if (MouseSensitivitySlider)
+        {
+            MouseSensitivitySlider->SetValue(GameInstance->MouseSensitivity);
+            MouseSensitivitySlider->OnValueChanged.AddDynamic(this, &UPCSettingsWidget::OnMouseSensitivityChanged);
+        }
+
+        if (MotionBlurCheckBox)
+        {
+            MotionBlurCheckBox->SetIsChecked(GameInstance->bIsMotionBlurEnabled);
+            MotionBlurCheckBox->OnCheckStateChanged.AddDynamic(this, &UPCSettingsWidget::OnMotionBlurCheckStateChanged);
         }
     }
 }
@@ -71,6 +84,29 @@ void UPCSettingsWidget::OnSFXVolumeChanged(float Value)
         if (GameInstance->GetSoundManager())
         {
             GameInstance->GetSoundManager()->SetSFXVolume(Value);
+        }
+    }
+}
+
+void UPCSettingsWidget::OnMouseSensitivityChanged(float Value)
+{
+    if (GameInstance)
+    {
+        GameInstance->MouseSensitivity = Value;
+        GameInstance->SaveMouseSettings();
+    }
+}
+
+void UPCSettingsWidget::OnMotionBlurCheckStateChanged(bool bIsChecked)
+{
+    if (GameInstance)
+    {
+        GameInstance->bIsMotionBlurEnabled = bIsChecked;
+        GameInstance->SaveMotionSettings();
+
+        if (GameInstance->GetMotionBlurManager())
+        {
+            GameInstance->GetMotionBlurManager()->SetMotionBlurEnabled(bIsChecked);
         }
     }
 }

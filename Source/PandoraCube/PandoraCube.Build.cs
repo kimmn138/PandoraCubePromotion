@@ -10,7 +10,7 @@ public class PandoraCube : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] { "PandoraCube" });
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "NavigationSystem", "AIModule", "GameplayTasks", "Slate", "SlateCore", "GeometryCollectionEngine", "Chaos", "ChaosSolverEngine" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "NavigationSystem", "AIModule", "GameplayTasks", "Slate", "SlateCore", "GeometryCollectionEngine", "Chaos", "ChaosSolverEngine", "Renderer" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

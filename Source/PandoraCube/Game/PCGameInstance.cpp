@@ -4,11 +4,16 @@
 #include "Game/PCGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/PCAudioSaveGame.h"
+#include "Mouse/PCMouseSaveGame.h"
+#include "GameFramework/GameUserSettings.h"
+#include "Player/PCPlayerController.h"
 
 void UPCGameInstance::Init()
 {
     Super::Init();
     LoadAudioSettings(); 
+    LoadMouseSettings();
+    LoadMotionSettings();
 }
 
 void UPCGameInstance::SaveAudioSettings()
@@ -35,9 +40,54 @@ void UPCGameInstance::LoadAudioSettings()
     }
 }
 
+void UPCGameInstance::SaveMouseSettings()
+{
+    UPCMouseSaveGame* SaveGameInstance = Cast<UPCMouseSaveGame>(UGameplayStatics::CreateSaveGameObject(UPCMouseSaveGame::StaticClass()));
+    if (SaveGameInstance)
+    {
+        SaveGameInstance->MouseSensitivity = MouseSensitivity;
+
+        UGameplayStatics::SaveGameToSlot(SaveGameInstance, "MouseSettings", 0);
+    }
+}
+
+void UPCGameInstance::LoadMouseSettings()
+{
+    UPCMouseSaveGame* SaveGameInstance = Cast<UPCMouseSaveGame>(UGameplayStatics::LoadGameFromSlot("MouseSettings", 0));
+    if (SaveGameInstance)
+    {
+        MouseSensitivity = SaveGameInstance->MouseSensitivity;
+    }
+}
+
+void UPCGameInstance::SaveMotionSettings()
+{
+    UPCMouseSaveGame* SaveGameInstance = Cast<UPCMouseSaveGame>(UGameplayStatics::CreateSaveGameObject(UPCMouseSaveGame::StaticClass()));
+    if (SaveGameInstance)
+    {
+        SaveGameInstance->bIsMotionBlurEnabled = bIsMotionBlurEnabled;
+
+        UGameplayStatics::SaveGameToSlot(SaveGameInstance, "MouseSettings", 0);
+    }
+}
+
+void UPCGameInstance::LoadMotionSettings()
+{
+    UPCMouseSaveGame* SaveGameInstance = Cast<UPCMouseSaveGame>(UGameplayStatics::LoadGameFromSlot("MouseSettings", 0));
+    if (SaveGameInstance)
+    {
+        bIsMotionBlurEnabled = SaveGameInstance->bIsMotionBlurEnabled;
+    }
+}
+
 void UPCGameInstance::SetDifficulty(EDifficultyLevel NewDifficulty)
 {
     SelectedDifficulty = NewDifficulty;
+}
+
+float UPCGameInstance::GetMouseSensitivity()
+{
+    return MouseSensitivity;
 }
 
 EDifficultyLevel UPCGameInstance::GetDifficulty()

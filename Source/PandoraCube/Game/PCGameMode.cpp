@@ -9,6 +9,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/AudioComponent.h"
 #include "PCSpawnManager.h"
+#include "PCMotionBlurManager.h"
 
 APCGameMode::APCGameMode()
 {
@@ -68,6 +69,19 @@ void APCGameMode::BeginPlay()
             GameInstance->SetSoundManager(SoundManager);
 
             PlayBackgroundMusic();
+        }
+
+        MotionBlurManager = GetWorld()->SpawnActor<APCMotionBlurManager>(
+            APCMotionBlurManager::StaticClass(),
+            FVector::ZeroVector,
+            FRotator::ZeroRotator
+        );
+
+        if (MotionBlurManager)
+        {
+            MotionBlurManager->SetMotionBlurEnabled(GameInstance->bIsMotionBlurEnabled);
+
+            GameInstance->SetMotionBlurManager(MotionBlurManager);
         }
     }
 

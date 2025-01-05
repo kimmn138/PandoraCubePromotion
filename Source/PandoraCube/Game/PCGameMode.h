@@ -52,5 +52,8 @@ private:
 	UPROPERTY()
 	TObjectPtr<class APCSoundManager> SoundManager;
 
+	UPROPERTY()
+	TObjectPtr<class APCMotionBlurManager> MotionBlurManager;
+
 	FTimerHandle WaveMusicTimerHandle;
 };
