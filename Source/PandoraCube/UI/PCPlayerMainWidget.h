@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Item/ItemTypes.h"
 #include "PCPlayerMainWidget.generated.h"
 
 /**
@@ -28,11 +29,16 @@ public:
 	void UpdateCurrentAmmoText(float NewCurrentAmmo);
 	void UpdateMaxAmmoText(float NewMaxAmmo);
 
+	void UpdateWeaponText(FName NewWeaponName);
+
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetAimImageVisibility(bool bIsVisible);
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetDamageOverlayImageVisibility(bool bIsVisible);
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetGoalTextHidden();
 
 protected:
 	UPROPERTY()
@@ -61,4 +67,10 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UImage> DamageOverlayImage;
+
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> GoalText;
+
+	UPROPERTY()
+	TObjectPtr<class UTextBlock> WeaponText;
 };

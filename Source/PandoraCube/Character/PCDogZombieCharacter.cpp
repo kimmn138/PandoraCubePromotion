@@ -13,7 +13,7 @@
 
 APCDogZombieCharacter::APCDogZombieCharacter()
 {
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_DogZombieAnimationBlueprint.ABP_DogZombieAnimationBlueprint_C"));
+	/*static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_DogZombieAnimationBlueprint.ABP_DogZombieAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -41,7 +41,7 @@ APCDogZombieCharacter::APCDogZombieCharacter()
 	if (HitMontageRef.Object)
 	{
 		HitMontage = HitMontageRef.Object;
-	}
+	}*/
 
 	FString ContextString = TEXT("Stat Data Context");
 	if (StatDataTable)

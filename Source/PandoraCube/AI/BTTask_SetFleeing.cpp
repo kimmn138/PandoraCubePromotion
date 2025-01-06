@@ -28,7 +28,6 @@ EBTNodeResult::Type UBTTask_SetFleeing::ExecuteTask(UBehaviorTreeComponent& Owne
 		return EBTNodeResult::Failed;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("ANIIIIIIIIIIII"));
 	bool IsFleeing = AIPawn->GetAIIsFleeing();
 	OwnerComp.GetBlackboardComponent()->SetValueAsBool(BBKEY_FLEEING, !IsFleeing);
 	AIPawn->SetAIIsFleeing(!IsFleeing);

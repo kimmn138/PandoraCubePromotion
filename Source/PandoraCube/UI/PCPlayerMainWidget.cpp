@@ -28,6 +28,12 @@ void UPCPlayerMainWidget::NativeConstruct()
 
 	MaxAmmoTextInt = Cast<UTextBlock>(GetWidgetFromName(TEXT("MaxAmmo")));
 	ensure(MaxAmmoTextInt);
+
+	GoalText = Cast<UTextBlock>(GetWidgetFromName(TEXT("GoalText")));
+	ensure(GoalText);
+
+	WeaponText = Cast<UTextBlock>(GetWidgetFromName(TEXT("WeaponText")));
+	ensure(WeaponText);
 }
 
 void UPCPlayerMainWidget::UpdateHpText(float NewCurrentHp)
@@ -82,6 +88,14 @@ void UPCPlayerMainWidget::UpdateMaxAmmoText(float NewMaxAmmo)
 	}
 }
 
+void UPCPlayerMainWidget::UpdateWeaponText(FName NewWeaponName)
+{
+	if (WeaponText)
+	{
+		WeaponText->SetText(FText::FromString(NewWeaponName.ToString()));
+	}
+}
+
 void UPCPlayerMainWidget::SetAimImageVisibility(bool bIsVisible)
 {
 	if (AimImage)
@@ -95,5 +109,13 @@ void UPCPlayerMainWidget::SetDamageOverlayImageVisibility(bool bIsVisible)
 	if (DamageOverlayImage)
 	{
 		DamageOverlayImage->SetVisibility(bIsVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+}
+
+void UPCPlayerMainWidget::SetGoalTextHidden()
+{
+	if (GoalText)
+	{
+		GoalText->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

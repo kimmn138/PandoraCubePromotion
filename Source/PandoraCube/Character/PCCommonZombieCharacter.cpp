@@ -10,7 +10,7 @@
 
 APCCommonZombieCharacter::APCCommonZombieCharacter()
 {
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_CommonZombieAnimationBlueprint.ABP_CommonZombieAnimationBlueprint_C"));
+	/*static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_CommonZombieAnimationBlueprint.ABP_CommonZombieAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -38,7 +38,7 @@ APCCommonZombieCharacter::APCCommonZombieCharacter()
 	if (HitMontageRef.Object)
 	{
 		HitMontage = HitMontageRef.Object;
-	}
+	}*/
 
 	FString ContextString = TEXT("Stat Data Context");
 	if (StatDataTable)

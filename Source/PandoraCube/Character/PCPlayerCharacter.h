@@ -76,7 +76,10 @@ protected:
 	TObjectPtr<class UParticleSystem> WeaponMuzzleFlash;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-	TObjectPtr<class USoundBase> RifleSound;
+	TObjectPtr<class USoundBase> SMGSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<class USoundBase> AK47Sound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	TObjectPtr<class USoundBase> PistolSound;
@@ -101,6 +104,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	TObjectPtr<class USoundBase> ShotgunReloadSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<class USoundBase> WarningSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Decal")
 	TSubclassOf<class APCBlood> BloodDecal;
@@ -183,6 +189,9 @@ protected:
 	void Sprint();
 	void StopSprinting();
 	void StartFiring();
+
+	virtual void Jump() override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 	UFUNCTION()
 	void Fire();

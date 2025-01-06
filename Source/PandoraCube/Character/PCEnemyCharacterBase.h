@@ -22,6 +22,8 @@ class PANDORACUBE_API APCEnemyCharacterBase : public ACharacter, public IPCAnima
 public:
 	APCEnemyCharacterBase();
 
+	virtual void Tick(float DeltaTime) override;
+
 	virtual void BeginDestroy() override;
 
 	virtual void PostInitializeComponents() override;
@@ -32,6 +34,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Behavior")
 	bool bImmediateChase;
+
+	bool bIsDead = false;
 
 	void SetImmediateChase(bool bChase);
 
@@ -60,7 +64,13 @@ protected:
 	UPROPERTY()
 	FTimerHandle ComboTimerHandle;
 	bool HasNextComboCommand = false;
-	bool bIsDead = false;
+	bool bIsAIActive = false;
+
+	UFUNCTION()
+	void PauseAnimation();
+
+	UFUNCTION()
+	void ResumeAnimation();
 
 protected:
 	virtual void AttackHitCheck() override;
@@ -99,9 +109,11 @@ public:
 
 	void NPCMeshLoadCompleted();
 
-protected:
 	bool bIsFleeing = false;
 
+	void CheckPlayerProximity();
+
+protected:
 	virtual float GetAIPatrolRadius() override;
 	virtual float GetAIDetectRange() override;
 	virtual float GetAIAttackRange() override;
@@ -120,4 +132,13 @@ protected:
 	void NotifyComboActionEnd();
 
 	TSharedPtr<FStreamableHandle> NPCMeshHandle;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TArray<TSubclassOf<class APCPickUpBase>> WeaponClasses;
+
+	void SpawnRandomWeapon();
+
+	UPROPERTY(EditAnywhere, Category = "Loot")
+	float DropChance = 0.05f;
 };

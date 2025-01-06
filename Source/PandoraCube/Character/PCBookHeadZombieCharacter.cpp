@@ -10,7 +10,7 @@
 
 APCBookHeadZombieCharacter::APCBookHeadZombieCharacter()
 {
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_BookHeadMonsterAnimationBlueprint.ABP_BookHeadMonsterAnimationBlueprint_C"));
+	/*static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_BookHeadMonsterAnimationBlueprint.ABP_BookHeadMonsterAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -38,7 +38,7 @@ APCBookHeadZombieCharacter::APCBookHeadZombieCharacter()
 	if (HitMontageRef.Object)
 	{
 		HitMontage = HitMontageRef.Object;
-	}
+	}*/
 
 	FString ContextString = TEXT("Stat Data Context");
 	if (StatDataTable)

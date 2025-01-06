@@ -7,10 +7,13 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Interface/PCAIControllerInterface.h"
 #include "PCAI.h"
+#include "Perception/AISenseConfig_Sight.h"
+#include "Kismet/GameplayStatics.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Character/PCEnemyCharacterBase.h"
 
 APCAIController::APCAIController()
 {
-	
 }
 
 void APCAIController::RunAI()

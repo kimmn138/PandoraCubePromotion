@@ -207,10 +207,16 @@ APCPlayerCharacter::APCPlayerCharacter()
 		WeaponMuzzleFlash = MuzzleFlashRef.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<USoundBase> RifleSoundRef(TEXT("/Script/Engine.SoundCue'/Game/MilitaryWeapSilver/Sound/Rifle/Cues/RifleA_Fire_Cue.RifleA_Fire_Cue'"));
-	if (nullptr != RifleSoundRef.Object)
+	static ConstructorHelpers::FObjectFinder<USoundBase> AK47SoundRef(TEXT("/Script/Engine.SoundCue'/Game/PandoraCube/Sound/Cue/AK47_Cue.AK47_Cue'"));
+	if (nullptr != AK47SoundRef.Object)
 	{
-		RifleSound = RifleSoundRef.Object;
+		AK47Sound = AK47SoundRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SMGSoundRef(TEXT("/Script/Engine.SoundCue'/Game/MilitaryWeapSilver/Sound/Rifle/Cues/RifleA_Fire_Cue.RifleA_Fire_Cue'"));
+	if (nullptr != SMGSoundRef.Object)
+	{
+		SMGSound = SMGSoundRef.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<USoundBase> PistolSoundRef(TEXT("/Script/Engine.SoundCue'/Game/MilitaryWeapSilver/Sound/Pistol/Cues/PistolA_Fire_Cue.PistolA_Fire_Cue'"));
@@ -261,6 +267,12 @@ APCPlayerCharacter::APCPlayerCharacter()
 		ShotgunReloadSound = ShotgunReloadSoundRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<USoundBase> WarningSoundRef(TEXT("/Script/Engine.SoundCue'/Game/PandoraCube/Sound/Cue/Warning_Cue.Warning_Cue'"));
+	if (nullptr != WarningSoundRef.Object)
+	{
+		WarningSound = WarningSoundRef.Object;
+	}
+
 	static ConstructorHelpers::FClassFinder<APCBlood> BloodDecalRef(TEXT("/Script/CoreUObject.Class'/Script/PandoraCube.PCBlood'"));
 	if (nullptr != BloodDecalRef.Class)
 	{
@@ -299,6 +311,8 @@ APCPlayerCharacter::APCPlayerCharacter()
 	CurrentItemSelection = 0;
 
 	bCooling = 0;
+
+	Tags.Add(FName("Player"));
 }
 
 void APCPlayerCharacter::PostInitializeComponents()
@@ -351,6 +365,11 @@ void APCPlayerCharacter::BeginPlay()
 		{
 			PlayerMainWidget->AddToViewport(999);
 			SetupCharacterWidget();
+
+			FTimerHandle GoalTextHandle;
+			GetWorldTimerManager().SetTimer(GoalTextHandle, [this]() {
+				PlayerMainWidget->SetGoalTextHidden();
+				}, 5.0f, false);
 		}
 	}
 
@@ -456,7 +475,7 @@ void APCPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APCPlayerCharacter::Look);
@@ -620,6 +639,27 @@ void APCPlayerCharacter::StartFiring()
 	}
 }
 
+void APCPlayerCharacter::Jump()
+{
+	Super::Jump();
+
+	if (bIsAiming)
+	{
+		StopAiming();
+	}
+
+	bCanAim = 0;
+	bCanFire = 0;
+}
+
+void APCPlayerCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	bCanAim = 1;
+	bCanFire = 1;
+}
+
 void APCPlayerCharacter::Fire()
 {
 	switch (WeaponType)
@@ -637,7 +677,7 @@ void APCPlayerCharacter::Fire()
 					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
 					if (bSuccess)
 					{
-						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						UGameplayStatics::PlaySoundAtLocation(this, AK47Sound, FollowCamera->GetComponentLocation());
 						ControllerRecoil();
 
 						if (EquippedWeapon)
@@ -656,6 +696,10 @@ void APCPlayerCharacter::Fire()
 						CurrentStats.FireRate,
 						false
 					);
+				}
+				else
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, WarningSound, GetActorLocation());
 				}
 			}
 			break;
@@ -690,6 +734,10 @@ void APCPlayerCharacter::Fire()
 					FTimerHandle FireRateHandle;
 					GetWorld()->GetTimerManager().SetTimer(FireRateHandle, this, &APCPlayerCharacter::ResetFire, CurrentStats.FireRate, false);
 				}
+				else
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, WarningSound, GetActorLocation());
+				}
 			}
 			break;
 
@@ -723,6 +771,10 @@ void APCPlayerCharacter::Fire()
 					FTimerHandle FireRateHandle;
 					GetWorld()->GetTimerManager().SetTimer(FireRateHandle, this, &APCPlayerCharacter::ResetFire, CurrentStats.FireRate, false);
 				}
+				else
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, WarningSound, GetActorLocation());
+				}
 			}
 			break;
 
@@ -739,7 +791,7 @@ void APCPlayerCharacter::Fire()
 					bool bSuccess = AnimInstanceRef->CallFunctionByNameWithArguments(*FunctionNameWithArgs, Ar, nullptr, true);
 					if (bSuccess)
 					{
-						UGameplayStatics::PlaySoundAtLocation(this, RifleSound, FollowCamera->GetComponentLocation());
+						UGameplayStatics::PlaySoundAtLocation(this, SMGSound, FollowCamera->GetComponentLocation());
 						ControllerRecoil();
 
 						if (EquippedWeapon)
@@ -758,6 +810,10 @@ void APCPlayerCharacter::Fire()
 						CurrentStats.FireRate,
 						false
 					);
+				}
+				else
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, WarningSound, GetActorLocation());
 				}
 			}
 			break;
@@ -938,6 +994,12 @@ void APCPlayerCharacter::DropItem()
 					InventoryComponent->SetCurrentAmmo(0);
 					InventoryComponent->SetMaxAmmo(0);
 					WeaponType = EWeaponType::IT_Hand;
+
+					if (PlayerMainWidget)
+					{
+						FName Hands = FName(TEXT("Hands"));
+						PlayerMainWidget->UpdateWeaponText(Hands);
+					}
 				}
 			}
 		}
@@ -1406,16 +1468,14 @@ void APCPlayerCharacter::ShowDamageOverlay()
 {
 	if (PlayerMainWidget)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SHOW DAMAGEOVERLAY"));
 		PlayerMainWidget->SetDamageOverlayImageVisibility(true);
 
 		if (GetWorld()->GetTimerManager().IsTimerActive(DamageOverlayTimerHandle))
 		{
 			GetWorld()->GetTimerManager().ClearTimer(DamageOverlayTimerHandle);
-			UE_LOG(LogTemp, Warning, TEXT("DamageOverlay Timer Cleared and Restarted"));
 		}
 
-		GetWorld()->GetTimerManager().SetTimer(DamageOverlayTimerHandle, this, &APCPlayerCharacter::HideDamageOverlay, 0.5f, false);
+		GetWorld()->GetTimerManager().SetTimer(DamageOverlayTimerHandle, this, &APCPlayerCharacter::HideDamageOverlay, 0.3f, false);
 	}
 }
 
@@ -1472,6 +1532,11 @@ void APCPlayerCharacter::EquipItem()
 								CurrentWeaponPickupClass = Row->PickupClass;
 								WeaponType = Row->Type;
 								ItemType = Row->ItemType;
+
+								if (PlayerMainWidget)
+								{
+									PlayerMainWidget->UpdateWeaponText(Row->Name);
+								}
 
 								InventoryComponent->SetMaxAmmo(InventoryComponent->Inventory[CurrentItemSelection].TotalBullets);
 								InventoryComponent->SetCurrentAmmo(InventoryComponent->Inventory[CurrentItemSelection].CurrentBullets);

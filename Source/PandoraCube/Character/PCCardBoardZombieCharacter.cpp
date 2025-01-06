@@ -14,7 +14,7 @@
 
 APCCardBoardZombieCharacter::APCCardBoardZombieCharacter()
 {
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_CardBoardZombieAnimationBlueprint.ABP_CardBoardZombieAnimationBlueprint_C"));
+	/*static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/PandoraCube/Blueprints/Animation/ABP_CardBoardZombieAnimationBlueprint.ABP_CardBoardZombieAnimationBlueprint_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
@@ -42,7 +42,7 @@ APCCardBoardZombieCharacter::APCCardBoardZombieCharacter()
 	if (HitMontageRef.Object)
 	{
 		HitMontage = HitMontageRef.Object;
-	}
+	}*/
 
 	FString ContextString = TEXT("Stat Data Context");
 	if (StatDataTable)
@@ -118,11 +118,9 @@ float APCCardBoardZombieCharacter::TakeDamage(float DamageAmount, FDamageEvent c
 void APCCardBoardZombieCharacter::SetFleeing()
 {
 	bIsFleeing = true;
-	UE_LOG(LogTemp, Warning, TEXT("SSSSIBAL?"));
 	UBlackboardComponent* BlackboardComp = Cast<APCAIController>(GetController())->GetBlackboardComponent();
 	if (BlackboardComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SSSSIBAL!"));
 		BlackboardComp->SetValueAsBool(BBKEY_FLEEING, bIsFleeing);
 	}
 }

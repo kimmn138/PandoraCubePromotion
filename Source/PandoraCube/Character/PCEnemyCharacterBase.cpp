@@ -15,6 +15,8 @@
 #include "PCPlayerCharacter.h"
 #include "Physics/PCCollision.h"
 #include "Components/AudioComponent.h"
+#include "PickUps/PCPickUpBase.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 APCEnemyCharacterBase::APCEnemyCharacterBase()
@@ -63,7 +65,23 @@ APCEnemyCharacterBase::APCEnemyCharacterBase()
 		StatDataTable = StatDataTableRef.Object;
 	}
 
+	PrimaryActorTick.bCanEverTick = true;
+
 	Tags.Add(FName("Flesh"));
+}
+
+void APCEnemyCharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (bIsDead)
+	{
+		return;
+	}
+
+	CheckPlayerProximity();
+
+	SetActorTickInterval(1.0f);
 }
 
 void APCEnemyCharacterBase::BeginDestroy()
@@ -208,7 +226,7 @@ void APCEnemyCharacterBase::ComboActionBegin()
 
 	CurrentCombo = 1;
 
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 	const float AttackSpeedRate = CurrentStats.AttackRate;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -273,6 +291,27 @@ void APCEnemyCharacterBase::ComboCheck()
 		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionData->MaxComboCount);
 		FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionData->MontageSectionNamePrefix, CurrentCombo);
 		AnimInstance->Montage_JumpToSection(NextSection, ComboActionMontage);
+	}
+}
+
+void APCEnemyCharacterBase::PauseAnimation()
+{
+	if (GetMesh())
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			AnimInstance->StopAllMontages(0.0f);
+			GetMesh()->bPauseAnims = true;
+		}
+	}
+}
+
+void APCEnemyCharacterBase::ResumeAnimation()
+{
+	if (GetMesh())
+	{
+		GetMesh()->bPauseAnims = false;
 	}
 }
 
@@ -351,6 +390,8 @@ void APCEnemyCharacterBase::SetDead()
 
 	OnZombieDeath.Broadcast();
 
+	SpawnRandomWeapon();
+
 	TWeakObjectPtr<APCEnemyCharacterBase> WeakThis(this);
 
 	GetWorld()->GetTimerManager().SetTimer(
@@ -403,6 +444,44 @@ void APCEnemyCharacterBase::NPCMeshLoadCompleted()
 	}
 
 	NPCMeshHandle->ReleaseHandle();
+}
+
+void APCEnemyCharacterBase::CheckPlayerProximity()
+{
+	FVector ZombieLocation = GetActorLocation();
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	if (!PlayerCharacter) return;
+
+	FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+	float DistanceToPlayer = FVector::Dist(ZombieLocation, PlayerLocation);
+
+	if (DistanceToPlayer < 5000.0f)
+	{
+		if (!bIsAIActive)
+		{
+			APCAIController* AIController = Cast<APCAIController>(GetController());
+			if (AIController && AIController->BrainComponent)
+			{
+				AIController->BrainComponent->StartLogic();
+				ResumeAnimation();
+				bIsAIActive = true;
+			}
+		}
+	}
+	else
+	{
+		if (bIsAIActive)
+		{
+			APCAIController* AIController = Cast<APCAIController>(GetController());
+			if (AIController && AIController->BrainComponent)
+			{
+				AIController->BrainComponent->StopLogic(TEXT("Out of Range"));
+				PauseAnimation();
+				bIsAIActive = false;
+			}
+		}
+	}
 }
 
 float APCEnemyCharacterBase::GetAIPatrolRadius()
@@ -470,5 +549,22 @@ void APCEnemyCharacterBase::AttackByAI()
 void APCEnemyCharacterBase::NotifyComboActionEnd()
 {
 	OnAttackFinished.ExecuteIfBound();
+}
+
+void APCEnemyCharacterBase::SpawnRandomWeapon()
+{
+	if (FMath::FRand() <= DropChance && WeaponClasses.Num() > 0)
+	{
+		int32 RandomIndex = FMath::RandRange(0, WeaponClasses.Num() - 1);
+		TSubclassOf<APCPickUpBase> SelectedWeaponClass = WeaponClasses[RandomIndex];
+
+		if (SelectedWeaponClass)
+		{
+			FVector SpawnLocation = GetActorLocation();
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+
+			APCPickUpBase* SpawnedWeapon = GetWorld()->SpawnActor<APCPickUpBase>(SelectedWeaponClass, SpawnLocation, SpawnRotation);
+		}
+	}
 }
 
